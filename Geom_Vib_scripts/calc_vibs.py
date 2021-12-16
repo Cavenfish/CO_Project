@@ -1,10 +1,9 @@
 import sys, time
+sys.path.append('../sourcecode/')
 
 from ase.io            import read
 from ase.vibrations    import Vibrations
 from ase.io.trajectory import Trajectory
-
-sys.path.append('../sourcecode/')
 from MvH_CO_JM8        import MvH_CO
 # from coco_MvH_ASE import coco_MvH
 # from coco_MvH_ASE import coco_qfix_MvH

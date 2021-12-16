@@ -1,10 +1,11 @@
-import time
+import sys, time
+sys.path.append('../sourcecode/')
 
-from ase.io import read
-system = read('pentamer.xyz')
-
+from ase.io     import read
 from MvH_CO_JM8 import MvH_CO
-calc = MvH_CO(atoms=system)
+
+system = read('pentamer.xyz')
+calc   = MvH_CO(atoms=system)
 system.set_calculator(calc)
 
 # with open("Large_cluster_FQ_False_JM7_fmax_e-4.txt", "a") as f:
