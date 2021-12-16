@@ -1,15 +1,17 @@
-import time
+import sys, time
+
+from ase.io            import read
+from ase.vibrations    import Vibrations
 from ase.io.trajectory import Trajectory
-from ase.io import read
-system = read('optimized_pentamer.xyz')
 
-from ase.vibrations import Vibrations
-
-from MvH_CO_JM8 import MvH_CO
+sys.path.append('../sourcecode/')
+from MvH_CO_JM8        import MvH_CO
 # from coco_MvH_ASE import coco_MvH
 # from coco_MvH_ASE import coco_qfix_MvH
 # from coco_MvH_ASE import coco2_MvH
-calc = MvH_CO(atoms=system)
+
+system = read('optimized_pentamer.xyz')
+calc   = MvH_CO(atoms=system)
 system.set_calculator(calc)
 
 
