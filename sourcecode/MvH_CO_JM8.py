@@ -14,7 +14,9 @@ def calculate_Morse(positions, epsilon, rho0, r0):
 		F              = preF * expf * (expf - 1) * diff / r
 		forces[2*i]   -= F
 		forces[2*i+1] += F
-	# In order to normalize the minimal morse potential to zero, the following energy will be added to change the zero point of all intramolecular interactions.
+	# In order to normalize the minimal morse potential to zero,
+	# the following energy will be added to change the zero point
+	# of all intramolecular interactions.
 	energy += epsilon * N / 2.0
 	return energy, forces
 
