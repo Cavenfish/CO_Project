@@ -6,30 +6,42 @@ from ase import Atoms
 from MvH_CO_JM8 import MvH_CO
 import matplotlib.pyplot as plt
 
-
+#Import trajectory file
 CO_traj = Trajectory('CO_molecule_50ps.traj')
+
+#Initiate blank lists
 E_pot_list = []
 E_kin_list = []
-E_total = []
-for i in range(len(CO_traj)):
-	system = CO_traj[i]	
-	calc = MvH_CO(atoms=system)
-	system.set_calculator(calc)
-	E_pot = system.get_potential_energy()
-	E_pot_list.append(E_pot)
-	E_kin = system.get_kinetic_energy()
-	E_kin_list.append(E_kin)
+E_total    = []
 
-for i in range(len(E_pot_list)):
-	E_total.append(E_pot_list[i] + E_kin_list[i])
+for i in range(len(CO_traj)):
+    #Initiate calculator 	
+    system = CO_traj[i]	
+    calc   = MvH_CO(atoms=system)
+    system.set_calculator(calc)
+
+    #Get energies, populate lists
+    E_pot = system.get_potential_energy()
+    E_kin = system.get_kinetic_energy()
+    E_tot = E_pot + E_kin
+    E_pot_list.append(E_pot)
+    E_kin_list.append(E_kin)
+    E_total.append(E_tot)
+
+#Useless extra loop?? 
+#for i in range(len(E_pot_list)):
+#    E_total.append(E_pot_list[i] + E_kin_list[i])
 
 E_total_avg = []
 
+#Get the average total energy of each 200 intervals?
 for i in range(len(E_total)//200):
-	E_total_interval = 0
-	for j in range(200):
-		E_total_interval += E_total[200*i+j]
+    E_total_interval = 0
+    for j in range(200):
+	E_total_interval += E_total[200*i+j]
 	E_total_avg.append(E_total_interval/200)
+
+
 #print(E_total_avg)
 
 #print(E_total)

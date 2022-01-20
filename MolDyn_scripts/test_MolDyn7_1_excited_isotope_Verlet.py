@@ -16,16 +16,21 @@ from MvH_CO_JM8 import MvH_CO
 system = read('../xyz_files/126.xyz')
 
 #I think here the initial print is to verify the isotope is added
+print('\n\nSystem prior to isotope addition:\n')
 print(system)
 
 #Add two new atoms (1 CO molecule) but with isotope masses 
 #note, it is added on the position of atoms 92 and 93
-#those atoms are then deleted
-dt = Atoms("CO", positions=[system.get_positions()[92],system.get_positions()[93]], masses=[13.003, 17.999])
+dt = Atoms("CO", 
+           positions=[system.get_positions()[92],system.get_positions()[93]], 
+           masses=[13.003, 17.999])
+
+#Delete atoms 92 and 93, then add new isotope atoms 
 del system[[92,93]]
 system = dt + system
 	
 #I think this print is to verify the isotope masses are in the system 
+print('\n\nSystem after isotope addition:\n')
 print(system)
 
 #Add the van Hemet calculator to the system
@@ -36,17 +41,20 @@ system.set_calculator(calc)
 	
 #Initiate the MD simulation with the Verlet numerical method
 #Each interval is 1 fs 
-dyn = VelocityVerlet(system, 1 * units.fs, logfile='md_Large_isotope_excited_Verlet_10K_50ps.log')
+dyn = VelocityVerlet(system, 1 * units.fs, 
+        logfile='md_Large_isotope_excited_Verlet_10K_50ps.log')
 
 #dyn = Langevin(system, 1*units.fs, 20*units.kB, 0.002, logfile='md_Crystal_geo-opt_20K_Langevin_50ps.log')
-	
+
+ 
 #Prints the energy/system size
 def printenergy(a=system):
-	epot = a.get_potential_energy() / len(a)
-	print(epot)
+    epot = a.get_potential_energy() / len(a)
+    print('Potential Energy: ' + str(epot))
 	
 #Attach a trajectory to the MD, saving every interval
-traj = Trajectory('moldyn_Large_isotope_excited_Verlet_10K_50ps.traj', 'w', system)
+traj = Trajectory('moldyn_Large_isotope_excited_Verlet_10K_50ps.traj', 
+                  'w', system)
 dyn.attach(traj.write, interval=1)
 
 #Attach the print energy function to the MD, printing ever 100 intervals
