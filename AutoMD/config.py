@@ -50,6 +50,57 @@ def calc_vibs(xyz):
 
     return
 
+def add_isotope(xyz, pos, masses):
+    #Read in system
+    system    = read(xyz)
+
+    #Get atom positions
+    positions = [system.get_positions()[pos]]
+
+    #Make new atoms but with isotopic masses
+    new_atoms = Atoms('CO', positions=positions, masses=masses)
+
+    #Delete old atoms add new atoms
+    del system[pos]
+    system = new_atoms + system
+
+    #Write XYZ file of system with isotope
+    new_name = xyz.replace('.xyz', '_isotope.xyz')
+    write(new_name, system)
+
+    return system, calc 
+
+
+def run_verletMD(xyz, pos=False, masses=False):
+    #If posisitons and masses given, add isotope and prep system
+    #Else just prep given system
+    if (pos) and (masses):
+        system, calc = add_isotope(xyz, pos, masses)
+        xyz          = xyz.replace('.xyz', '_isotope.xyz')
+    else:
+        system, calc = prep_system(xyz)
+
+    #Define logfile name
+    logfile  = xyz.replace('.xyz', '.log') 
+
+    #Initiate MD simulation with Verlet numerical method
+    dyn      = VelocityVerlet(system, 1 * units.fs, logfile=logfile)
+
+    #Attach a trajectory file to the MD, saving every interval
+    trajname = xyz.replace('.xyz', '.traj')
+    traj     = Trajectory(trajname, 'w', system)
+    dyn.attach(traj.write, interval=1)
+
+    f = lambda x=system: (print(x.get_potential_energy() / len(x))) 
+
+    #Attach the lambda function to the MD, every 100 intervals
+    dyn.attach(f, interval=100)
+
+    #Run for 50k intervals (1 fs/interval -> 50 ps total)
+    dyn.run(50000)
+
+    return
+
 def get_system_properties(xyz):
     #Read in system and set van Hemert calculator
     system, calc = prep_system(xyz)
