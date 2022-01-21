@@ -21,14 +21,14 @@ def prep_system(xyz):
     return system, calc
 
 def geo_opt(xyz):
-    #Read in system and set van Hemet calculator
+    #Read in system and set van Hemert calculator
     system, calc = prep_system(xyz)
 
     #Make trajectory string
-    traj   = xyz.replace('.xyz', '_opt.traj')
+    traj  = xyz.replace('.xyz', '_opt.traj')
     
     #Run BFGS optimization of geometry
-    opt    = BFGS(system, trajectory=traj)
+    opt   = BFGS(system, trajectory=traj)
     opt.run(fmax=0.0001)
 
     #Make XYZ file of optimized system
@@ -39,8 +39,19 @@ def geo_opt(xyz):
 
     return
 
+def calc_vibs(xyz):
+    #Read in system and set van Hemert calculator
+    system, calc = prep_system(xyz)
+
+    #Run vibrational analysis
+    vib = Vibrations(system, delta=0.0001)
+    vib.run()
+    vib.summary()
+
+    return
+
 def get_system_properties(xyz):
-    #Read in system and set van Hemet calculator
+    #Read in system and set van Hemert calculator
     system, calc = prep_system(xyz)
 
     #Get system potential energy and track time of calculation
