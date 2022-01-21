@@ -1,4 +1,5 @@
 import sys, time
+import numpy as np
 from ase.io import read, write
 from ase import units, Atoms
 from ase.optimize import BFGS
@@ -66,14 +67,31 @@ def get_system_properties(xyz):
            'E_elst  = %.4f\n'   % E_elst,
            'Sum     = %.4f\n\n' % sum([E_ex, E_disp, E_elst]))
 
-    #Get forces and track time
+    #Get analytical forces and track time
     b4     = time.time()
     forces = system.get_forces()
     F_time = time.time() - b4
 
-    #Pretty print forces
+    #Pretty print analytical forces
     print(' Analytical forces:\n', forces, '\n',
            'Runtime          : %.1f (s)\n\n' % F_time)
+
+    #Get numerical forces and track time
+    b4         = time.time()
+    num_forces = calc.calculate_numerical_forces(system, d=1e-6)
+    F_num_time = time.time() - b4
+
+    #Pretty print numerical forces
+    print(' Numerical forces:\n', num_forces, '\n',
+           'Runtime         : %.1f (s)\n\n' % F_num_time)
+
+    #Get differences between numerical and analytical
+    diff = num_forces - forces
+    norm = np.linalg.norm(diff) # also get norm
+
+    #Pretty print difference
+    print(' Numerical - Analytical:\n', diff, '\n',
+           'Norm                  : %.4f\n\n' % norm )
 
     #Pretty Closing
     print('\n\n---Ending Printout---\n\n')
