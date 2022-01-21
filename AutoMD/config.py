@@ -1,11 +1,12 @@
 import sys, time
-from ase.io import read
+from ase.io import read, write
 from ase import units, Atoms
 from ase.optimize import BFGS
 from .MvH_CO_JM8 import MvH_CO
 from ase.visualize import view
 from ase.vibrations import Vibrations
 from ase.md.verlet import VelocityVerlet
+from ase.io.trajectory import Trajectory
 
 def view_xyz(xyz):
     system = read(xyz)
@@ -28,6 +29,12 @@ def geo_opt(xyz):
     #Run BFGS optimization of geometry
     opt    = BFGS(system, trajectory=traj)
     opt.run(fmax=0.0001)
+
+    #Make XYZ file of optimized system
+    traj  = Trajectory(traj)
+    atoms = traj[-1]
+    opt_f = xyz.replace('.xyz', '_opt.xyz')
+    write(opt_f, atoms)
 
     return
 
