@@ -1,5 +1,6 @@
 import sys, time
 import numpy as np
+from scipy.constants import c
 from ase.io import read, write
 from ase import units, Atoms
 from ase.optimize import BFGS
@@ -19,6 +20,32 @@ def prep_system(xyz):
     calc   = MvH_CO(atoms=system)
     system.set_calculator(calc)
     return system, calc
+
+def Morse_excitation(nu, n):
+    #nu -> cm^-1
+    # n -> unitless
+
+    #Constants and unite conversions
+    D_e   = 11.230        #eV
+    beta  =  2.627        #Angstrom
+    r_e   =  1.182        #Angstrom
+    omega = nu * c * 100  #s^-1
+    hbar  =  6.582119e-16 #eV * s
+    V_mor = (n + 1/2) * hbar * omega
+
+    #V_mor = D_e[1-exp(-beta(r_A-r_e))]^2
+
+    a = np.sqrt(V_mor/D_e)
+
+    #a = 1-exp(-beta(r_A-r_e)) ---> exp(-beta(r_A-r_e)) = 1 - a
+
+    b = - np.log(1-a)/beta
+
+    #r_A - r_e = b ----> r_A = b + r_e
+
+    r_A = b + r_e
+
+    return r_A
 
 def geo_opt(xyz):
     #Read in system and set van Hemert calculator
