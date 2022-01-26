@@ -19,7 +19,7 @@ def prep_system(xyz):
     system = read(xyz)
     calc   = MvH_CO(atoms=system)
     system.set_calculator(calc)
-    return system, calc
+    return system, calc 
 
 def stretch_molecule(xyz, swap, masses, pos, r):
     #r excitation radius
@@ -59,7 +59,7 @@ def stretch_molecule(xyz, swap, masses, pos, r):
     system = read(xyz)
     
     #Make stretched molecule
-    new_atoms = Atoms('CO', positions=positions, masses=masses)
+    new_atoms = Atoms('CO', positions=new_pos, masses=masses)
 
     #Delete old atoms add new atoms
     del system[swap]
@@ -172,13 +172,20 @@ def run_verletMD(xyz, pos=False, masses=False):
     traj     = Trajectory(trajname, 'w', system)
     dyn.attach(traj.write, interval=1)
 
-    f = lambda x=system: (print(x.get_potential_energy() / len(x))) 
+    #Open output file
+    outname = xyz.replace('.xyz', '.out')
+    out     = open(outname, 'w')
+    f = lambda x=system, y=out: (
+            y.write(str(x.get_potential_energy() / len(x)) +'\n'))
 
     #Attach the lambda function to the MD, every 100 intervals
     dyn.attach(f, interval=100)
 
     #Run for 50k intervals (1 fs/interval -> 50 ps total)
     dyn.run(50000)
+
+    #Save and close output file
+    out.close()
 
     return
 
