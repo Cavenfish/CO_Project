@@ -9,6 +9,7 @@ from ase.visualize import view
 from ase.vibrations import Vibrations
 from ase.md.verlet import VelocityVerlet
 from ase.io.trajectory import Trajectory
+from ase.md.langevin import Langevin
 
 def view_xyz(xyz):
     system = read(xyz)
@@ -151,6 +152,46 @@ def add_isotope(xyz, pos, masses):
 
     return 
 
+def run_langevinMD(xyz, n=50000, pos=False, masses=False):
+    #If posisitons and masses given, add isotope and prep system
+    #Else just prep given system
+    if (pos) and (masses):
+        system, calc = add_isotope(xyz, pos, masses)
+        xyz          = xyz.replace('.xyz', '_isotope.xyz')
+    else:
+        system, calc = prep_system(xyz)
+
+    #Define logfile name
+    logfile  = xyz.replace('.xyz', '.log')
+
+    #Initiate MD simulation with Langevin thermometer
+    dyn      = Langevin(system, 
+                        1  * units.fs, #time interval
+                        20 * units.kB, #temperature
+                        0.002,         #friction coefficient
+                        logfile=logfile)
+
+    #Attach a trajectory file to the MD, saving every interval
+    trajname = xyz.replace('.xyz', '.traj')
+    traj     = Trajectory(trajname, 'w', system)
+    dyn.attach(traj.write, interval=1)
+
+    #Open output file
+    outname = xyz.replace('.xyz', '.out')
+    out     = open(outname, 'w')
+    f = lambda x=system, y=out: (
+            y.write(str(x.get_potential_energy() / len(x)) +'\n'))
+
+    #Attach the lambda function to the MD, every 100 intervals
+    dyn.attach(f, interval=100)
+
+    #Run for n intervals (1 fs/interval)
+    dyn.run(n)
+
+    #Save and close output file
+    out.close()
+
+    return
 
 def run_verletMD(xyz, n=50000,  pos=False, masses=False):
     #If posisitons and masses given, add isotope and prep system
