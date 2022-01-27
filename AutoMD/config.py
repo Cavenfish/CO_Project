@@ -152,7 +152,7 @@ def add_isotope(xyz, pos, masses):
 
     return 
 
-def run_langevinMD(xyz, n=50000, pos=False, masses=False):
+def run_langevinMD(xyz, n=50000, mu=0.002, temp=20,  pos=False, masses=False):
     #If posisitons and masses given, add isotope and prep system
     #Else just prep given system
     if (pos) and (masses):
@@ -167,9 +167,9 @@ def run_langevinMD(xyz, n=50000, pos=False, masses=False):
     #Initiate MD simulation with Langevin thermometer
     dyn      = Langevin(system, 
                         1  * units.fs, #time interval
-                        20 * units.kB, #temperature
-                        0.002,         #friction coefficient
-                        logfile=logfile)
+                        friction      = mu,
+                        temperature_K = temp,
+                        logfile       =logfile)
 
     #Attach a trajectory file to the MD, saving every interval
     trajname = xyz.replace('.xyz', '.traj')
