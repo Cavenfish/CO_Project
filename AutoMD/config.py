@@ -79,9 +79,9 @@ def Morse_excitation(nu, n):
     #      if using an isotope, we need new values
 
     #Constants and unite conversions
-    D_e   = 11.230        #eV
-    beta  =  2.627        #Angstrom^-1
-    r_e   =  1.182        #Angstrom
+    D_e   = 11.2301       #eV
+    beta  =  0.6519       #Angstrom^-1
+    r_e   =  1.1282       #Angstrom
     omega = nu * c * 100  #s^-1
     hbar  =  6.582119e-16 #eV * s
     V_mor = (n + 1/2) * hbar * omega
@@ -152,7 +152,7 @@ def add_isotope(xyz, pos, masses):
     return 
 
 
-def run_verletMD(xyz, pos=False, masses=False):
+def run_verletMD(xyz, n=50000,  pos=False, masses=False):
     #If posisitons and masses given, add isotope and prep system
     #Else just prep given system
     if (pos) and (masses):
@@ -181,8 +181,8 @@ def run_verletMD(xyz, pos=False, masses=False):
     #Attach the lambda function to the MD, every 100 intervals
     dyn.attach(f, interval=100)
 
-    #Run for 50k intervals (1 fs/interval -> 50 ps total)
-    dyn.run(50000)
+    #Run for n intervals (1 fs/interval)
+    dyn.run(n)
 
     #Save and close output file
     out.close()
