@@ -70,7 +70,7 @@ def stretch_molecule(xyz, swap, masses, pos, r):
     new_name = xyz.replace('.xyz', '_excited.xyz')
     write(new_name, system)
 
-    return
+    return new_name
 
 def Morse_excitation(nu, n):
     #nu -> cm^-1
@@ -118,7 +118,7 @@ def geo_opt(xyz):
     opt_f = xyz.replace('.xyz', '_opt.xyz')
     write(opt_f, atoms)
 
-    return
+    return opt_f
 
 def calc_vibs(xyz):
     #Read in system and set van Hemert calculator
@@ -150,19 +150,14 @@ def add_isotope(xyz, pos, masses):
     new_name = xyz.replace('.xyz', '_isotope.xyz')
     write(new_name, system)
 
-    return 
+    return new_name
 
-def run_langevinMD(xyz, n=50000, mu=0.002, temp=20,  pos=False, masses=False):
-    #If posisitons and masses given, add isotope and prep system
-    #Else just prep given system
-    if (pos) and (masses):
-        system, calc = add_isotope(xyz, pos, masses)
-        xyz          = xyz.replace('.xyz', '_isotope.xyz')
-    else:
-        system, calc = prep_system(xyz)
+def run_langevinMD(xyz, n=50000, mu=0.002, temp=10):
+    #Prep system
+    system, calc = prep_system(xyz)
 
     #Define logfile name
-    logfile  = xyz.replace('.xyz', '.log')
+    logfile  = xyz.replace('.xyz', '_NVT.log')
 
     #Initiate MD simulation with Langevin thermometer
     dyn      = Langevin(system, 
@@ -172,18 +167,18 @@ def run_langevinMD(xyz, n=50000, mu=0.002, temp=20,  pos=False, masses=False):
                         logfile       =logfile)
 
     #Attach a trajectory file to the MD, saving every interval
-    trajname = xyz.replace('.xyz', '.traj')
+    trajname = xyz.replace('.xyz', '_NVT.traj')
     traj     = Trajectory(trajname, 'w', system)
     dyn.attach(traj.write, interval=1)
 
     #Open output file
-    outname = xyz.replace('.xyz', '.out')
+    outname = xyz.replace('.xyz', '_NVT.out')
     out     = open(outname, 'w')
     f = lambda x=system, y=out: (
             y.write(str(x.get_potential_energy() / len(x)) +'\n'))
 
     #Attach the lambda function to the MD, every 100 intervals
-    dyn.attach(f, interval=100)
+    dyn.attach(f, interval=1)
 
     #Run for n intervals (1 fs/interval)
     dyn.run(n)
@@ -191,36 +186,37 @@ def run_langevinMD(xyz, n=50000, mu=0.002, temp=20,  pos=False, masses=False):
     #Save and close output file
     out.close()
 
-    return
+    #Get last frame of simulation write xyz for it
+    traj  = Trajectory(trajname)
+    atoms = traj[-1]
+    fname = xyz.replace('.xyz', '_NVT.xyz')
+    write(fname, atoms)
 
-def run_verletMD(xyz, n=50000,  pos=False, masses=False):
-    #If posisitons and masses given, add isotope and prep system
-    #Else just prep given system
-    if (pos) and (masses):
-        system, calc = add_isotope(xyz, pos, masses)
-        xyz          = xyz.replace('.xyz', '_isotope.xyz')
-    else:
-        system, calc = prep_system(xyz)
+    return fname
+
+def run_verletMD(xyz, n=50000):
+    #Prep system
+    system, calc = prep_system(xyz)
 
     #Define logfile name
-    logfile  = xyz.replace('.xyz', '.log') 
+    logfile  = xyz.replace('.xyz', '_NVE.log') 
 
     #Initiate MD simulation with Verlet numerical method
     dyn      = VelocityVerlet(system, 1 * units.fs, logfile=logfile)
 
     #Attach a trajectory file to the MD, saving every interval
-    trajname = xyz.replace('.xyz', '.traj')
+    trajname = xyz.replace('.xyz', '_NVE.traj')
     traj     = Trajectory(trajname, 'w', system)
     dyn.attach(traj.write, interval=1)
 
     #Open output file
-    outname = xyz.replace('.xyz', '.out')
+    outname = xyz.replace('.xyz', '_NVE.out')
     out     = open(outname, 'w')
     f = lambda x=system, y=out: (
             y.write(str(x.get_potential_energy() / len(x)) +'\n'))
 
     #Attach the lambda function to the MD, every 100 intervals
-    dyn.attach(f, interval=100)
+    dyn.attach(f, interval=1)
 
     #Run for n intervals (1 fs/interval)
     dyn.run(n)

@@ -33,7 +33,7 @@ system = dt + system
 print('\n\nSystem after isotope addition:\n')
 print(system)
 
-#Add the van Hemet calculator to the system
+#Add the van Hemert calculator to the system
 calc = MvH_CO(atoms=system)
 system.set_calculator(calc)
 	
