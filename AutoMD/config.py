@@ -1,5 +1,6 @@
 import sys, time
 import numpy as np
+import pandas as pd
 from scipy.constants import c
 from ase.io import read, write
 from ase import units, Atoms
@@ -22,7 +23,7 @@ def prep_system(xyz):
     system.set_calculator(calc)
     return system, calc 
 
-def stretch_molecule(xyz, swap, masses, pos, r):
+def stretch_molecule(xyz, swap, masses, r):
     #r excitation radius
 
     #concept: reduce the problem to 1D
@@ -35,6 +36,11 @@ def stretch_molecule(xyz, swap, masses, pos, r):
     #      -Move C and O along opposite directions of pseudo hat{x}
     #      -Weight the movement based on their mass ratio
 
+    #Get pos from system
+    atoms, _ = prep_system(xyz)
+    pos      = atoms.get_positions()[swap]
+
+    #Define parameters 
     bnd_vect = np.array(pos[1]) - np.array(pos[0])
     norm     = np.linalg.norm(bnd_vect)
     unt_vect = bnd_vect / norm
@@ -224,35 +230,36 @@ def run_verletMD(xyz, n=50000):
     #Save and close output file
     out.close()
 
-    return
+    return trajname
 
-def get_system_properties(xyz):
-    #Read in system and set van Hemert calculator
-    system, calc = prep_system(xyz)
-
+def get_system_properties(system, calc, i, f):
     #Get system potential energy and track time of calculation
     b4          = time.time()
     E_pot       = system.get_potential_energy()
+    #E_pots      = system.get_potential_energies()
     E_pot_time  = time.time() - b4
 
     #Pretty Header
-    print('\n\n---Starting Printout---\n\n')
+    f.write('\n\n---Interval %d Printout---\n\n' % i)
+
+    #Pretty print excited molecule energy
+    #f.write(' Excited Molecule Energy: %.4f\n\n' % sum(E_pots[0:2]))
 
     #Pretty print potential energy
-    print(' Potential Energy: %.4f\n' % E_pot,
-           'Runtime         : %.1f (s)\n\n' % E_pot_time)
+    f.write('Potential Energy: %.4f\n' % E_pot)
+    f.write('Runtime         : %.1f (s)\n\n' % E_pot_time)
 
     #Get energy contributions
     E_intra, E_pair, E_ex, E_disp, E_elst = calc.get_energy_contributions()
-    
+
     #Pretty print them out
-    print(' E_intra = %.4f\n'   % E_intra,
-           'E_pair  = %.4f\n'   % E_pair,
-           'Sum     = %.4f\n\n' % sum([E_intra, E_pair]))
-    print(' E_ex    = %.4f\n'   % E_ex,
-           'E_disp  = %.4f\n'   % E_disp,
-           'E_elst  = %.4f\n'   % E_elst,
-           'Sum     = %.4f\n\n' % sum([E_ex, E_disp, E_elst]))
+    f.write('E_intra = %.4f\n'   % E_intra)
+    f.write('E_pair  = %.4f\n'   % E_pair)
+    f.write('Sum     = %.4f\n\n' % sum([E_intra, E_pair]))
+    f.write('E_ex    = %.4f\n'   % E_ex)
+    f.write('E_disp  = %.4f\n'   % E_disp)
+    f.write('E_elst  = %.4f\n'   % E_elst)
+    f.write('Sum     = %.4f\n\n' % sum([E_ex, E_disp, E_elst]))
 
     #Get analytical forces and track time
     b4     = time.time()
@@ -260,8 +267,8 @@ def get_system_properties(xyz):
     F_time = time.time() - b4
 
     #Pretty print analytical forces
-    print(' Analytical forces:\n', forces, '\n',
-           'Runtime          : %.1f (s)\n\n' % F_time)
+    f.write('Analytical forces:\n' +  str(forces) + '\n')
+    f.write('Runtime          : %.1f (s)\n\n' % F_time)
 
     #Get numerical forces and track time
     b4         = time.time()
@@ -269,20 +276,90 @@ def get_system_properties(xyz):
     F_num_time = time.time() - b4
 
     #Pretty print numerical forces
-    print(' Numerical forces:\n', num_forces, '\n',
-           'Runtime         : %.1f (s)\n\n' % F_num_time)
+    f.write('Numerical forces:\n' + str(num_forces) + '\n')
+    f.write('Runtime         : %.1f (s)\n\n' % F_num_time)
 
     #Get differences between numerical and analytical
     diff = num_forces - forces
     norm = np.linalg.norm(diff) # also get norm
 
     #Pretty print difference
-    print(' Numerical - Analytical:\n', diff, '\n',
-           'Norm                  : %.4f\n\n' % norm )
+    f.write('Numerical - Analytical:\n' + str(diff) + '\n')
+    f.write('Norm                  : %.4f\n\n' % norm )
 
     #Pretty Closing
-    print('\n\n---Ending Printout---\n\n')
+    f.write('\n\n---Ending Printout---\n\n')
 
     return
 
+def track_dissipation(system, calc, i, df):
+    #Pull data
+    E_pot   = system.get_potential_energy()
+    force   = system.get_forces()
+    veloc   = system.get_velocities()
+    mass    = system.get_masses()
+    E_kin_a = 0.5 * mass[0] * np.dot(veloc[0], veloc[0])
+    E_kin_b = 0.5 * mass[1] * np.dot(veloc[1], veloc[1])
+    E_kin   = E_kin_a + E_kin_b 
+    E_tot   = E_kin + E_pot
 
+    #Initiate row of data to populate DataFrame with
+    new_row = {'Time': i,
+               'Potential Energy': E_pot,
+               'Kinetic Energy': E_kin,
+               'Total Energy': E_tot}
+    
+    #Add data to DataFrame
+    df = df.append(new_row, ignore_index=True)
+
+    return df
+
+def make_NVT_output(logFile, csvFile):
+    #Open, read and close log file
+    f    = open(logFile, 'r')
+    data = f.readlines()
+    f.close()
+
+    #Get header row and its length
+    head = data[0].split()
+    
+    #Initiate dictionary
+    temp = {}
+
+    #Nest loops to build dict
+    for i in range(len(head)):
+        temp[head[i]] = []
+        for j in range(1,len(data)):
+            temp[head[i]].append(float(data[j].split()[i]))
+
+    #Build DataFrame 
+    df = pd.DataFrame(temp)
+
+    #Make csv file
+    df.to_csv(csvFile)
+
+    #Return DataFrame in case its going to be used
+    #If not, the call can ignore the return
+    return df 
+
+def make_NVE_output(trajFile, csvFile):
+    #Open trajectory
+    traj = Trajectory(trajFile)
+    
+    #Initiate DataFrame
+    df   = pd.DataFrame({'Time':[],
+                         'Potential Energy': [],
+                         'Kinetic Energy': [],
+                         'Total Energy': []})
+
+    #Loop through trajectory, writting to output file
+    for i in range(len(traj)):
+        system = traj[i][0:2]
+        calc   = MvH_CO(atoms=system)
+        system.set_calculator(calc)
+        df     = track_dissipation(system, calc, i, df)
+
+    #Write csv file
+    df.to_csv(csvFile)
+
+    return
