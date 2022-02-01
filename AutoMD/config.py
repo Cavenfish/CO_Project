@@ -177,20 +177,22 @@ def run_langevinMD(xyz, n=50000, mu=0.002, temp=10):
     traj     = Trajectory(trajname, 'w', system)
     dyn.attach(traj.write, interval=1)
 
+    #UPDATE: This adds unneccsary time to MD runtime
+    #            I am removing it
     #Open output file
-    outname = xyz.replace('.xyz', '_NVT.out')
-    out     = open(outname, 'w')
-    f = lambda x=system, y=out: (
-            y.write(str(x.get_potential_energy() / len(x)) +'\n'))
+    #outname = xyz.replace('.xyz', '_NVT.out')
+    #out     = open(outname, 'w')
+    #f = lambda x=system, y=out: (
+    #        y.write(str(x.get_potential_energy() / len(x)) +'\n'))
 
     #Attach the lambda function to the MD, every 100 intervals
-    dyn.attach(f, interval=1)
+    #dyn.attach(f, interval=1)
 
     #Run for n intervals (1 fs/interval)
     dyn.run(n)
 
     #Save and close output file
-    out.close()
+    #out.close()
 
     #Get last frame of simulation write xyz for it
     traj  = Trajectory(trajname)
@@ -215,20 +217,23 @@ def run_verletMD(xyz, n=50000):
     traj     = Trajectory(trajname, 'w', system)
     dyn.attach(traj.write, interval=1)
 
+
+    #UPDATE: This adds unneccsary time to MD runtime
+    #            I am removing it
     #Open output file
-    outname = xyz.replace('.xyz', '_NVE.out')
-    out     = open(outname, 'w')
-    f = lambda x=system, y=out: (
-            y.write(str(x.get_potential_energy() / len(x)) +'\n'))
+    #outname = xyz.replace('.xyz', '_NVE.out')
+    #out     = open(outname, 'w')
+    #f = lambda x=system, y=out: (
+    #        y.write(str(x.get_potential_energy() / len(x)) +'\n'))
 
     #Attach the lambda function to the MD, every 100 intervals
-    dyn.attach(f, interval=1)
+    #dyn.attach(f, interval=1)
 
     #Run for n intervals (1 fs/interval)
     dyn.run(n)
 
     #Save and close output file
-    out.close()
+    #out.close()
 
     return trajname
 
@@ -293,14 +298,38 @@ def get_system_properties(system, calc, i, f):
     return
 
 def track_dissipation(system, calc, i, df):
-    #Pull data
-    E_pot   = system.get_potential_energy()
-    force   = system.get_forces()
+    #Idea for tracking single molecule energy:
+    #   -Get energy of full system
+    #   -Get energy of system minus molecule (slice system)
+    #   -Full system - sliced system =  single molecule + disp
+    #   -Single molecule + disp is what i want
+
+    #UPDATE: This method is extremly slow!
+    #           it takes roughly 0.07s per frame for 17CO cluster
+    #           it takes roughly 1s    per frame for 60CO cluster
+
+
+    #Fastest method is to store molecule energ during MD
+    #Next best is calculate just molecular energy with 
+    #specific function that uses pair potential
+
+    #Set up a partial system Atoms object with calculator
+    partial = system[2:]
+    partial.set_calculator(calc)
+
+    #Get potential energy of molecule
+    E_pot_full  =  system.get_potential_energy()
+    E_pot_rest  = partial.get_potential_energy()
+    E_pot       = E_pot_full - E_pot_rest 
+
+    #Get kinetic energy of molecule 
     veloc   = system.get_velocities()
     mass    = system.get_masses()
     E_kin_a = 0.5 * mass[0] * np.dot(veloc[0], veloc[0])
     E_kin_b = 0.5 * mass[1] * np.dot(veloc[1], veloc[1])
     E_kin   = E_kin_a + E_kin_b 
+    
+    #Sum up total molecular energy
     E_tot   = E_kin + E_pot
 
     #Initiate row of data to populate DataFrame with
@@ -354,12 +383,13 @@ def make_NVE_output(trajFile, csvFile):
 
     #Loop through trajectory, writting to output file
     for i in range(len(traj)):
-        system = traj[i][0:2]
+        system = traj[i]
         calc   = MvH_CO(atoms=system)
-        system.set_calculator(calc)
         df     = track_dissipation(system, calc, i, df)
 
     #Write csv file
     df.to_csv(csvFile)
 
-    return
+    #Return DataFrame in case its going to be used
+    #If not, the call can ignore the return
+    return df

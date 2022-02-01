@@ -7,7 +7,7 @@ from MvH_CO_JM8 import MvH_CO
 import matplotlib.pyplot as plt
 
 #Import trajectory file
-CO_traj = Trajectory('CO_molecule_50ps.traj')
+CO_traj = Trajectory('./test.traj')
 
 #Initiate blank lists
 E_pot_list = []
@@ -38,8 +38,8 @@ E_total_avg = []
 for i in range(len(E_total)//200):
     E_total_interval = 0
     for j in range(200):
-	E_total_interval += E_total[200*i+j]
-	E_total_avg.append(E_total_interval/200)
+        E_total_interval += E_total[200*i+j]
+        E_total_avg.append(E_total_interval/200)
 
 
 #print(E_total_avg)
@@ -52,4 +52,4 @@ plt.plot(range(0,50000,200),E_total_avg)
 plt.ylabel('$E_{Tot}$(eV)')
 plt.xlabel('Simulation time(fs)')
 #print(E_pot_list)
-plt.show()
+plt.show(block=True)
