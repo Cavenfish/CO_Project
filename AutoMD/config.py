@@ -5,7 +5,7 @@ from scipy.constants import c
 from ase.io import read, write
 from ase import units, Atoms
 from ase.optimize import BFGS
-from .MvH_CO_JM8 import MvH_CO
+from .MvH_CO_JM8_edit import MvH_CO
 from ase.visualize import view
 from ase.vibrations import Vibrations
 from ase.md.verlet import VelocityVerlet
@@ -82,7 +82,7 @@ def Morse_excitation(nu, n):
     #nu -> cm^-1
     # n -> unitless
 
-    #Note: D_e, r_e and beta are values fitted to CO
+    #Note: D_e, and beta are values fitted to CO
     #      if using an isotope, we need new values
 
     #Constants and unite conversions
@@ -220,6 +220,7 @@ def run_verletMD(xyz, n=50000):
 
     #UPDATE: This adds unneccsary time to MD runtime
     #            I am removing it
+
     #Open output file
     #outname = xyz.replace('.xyz', '_NVE.out')
     #out     = open(outname, 'w')
@@ -306,27 +307,39 @@ def track_dissipation(system, calc, i, df):
 
     #UPDATE: This method is extremly slow!
     #           it takes roughly 0.07s per frame for 17CO cluster
-    #           it takes roughly 1s    per frame for 60CO cluster
+    #           it takes roughly 0.85s per frame for 60CO cluster
 
+    #TEMP SOLU: Return to using the single molecule slice
+    #               this won't include the effect of the
+    #               other molecules but should still give
+    #               some information. 
 
     #Fastest method is to store molecule energ during MD
     #Next best is calculate just molecular energy with 
     #specific function that uses pair potential
 
     #Set up a partial system Atoms object with calculator
-    partial = system[2:]
-    partial.set_calculator(calc)
 
     #Get potential energy of molecule
-    E_pot_full  =  system.get_potential_energy()
-    E_pot_rest  = partial.get_potential_energy()
-    E_pot       = E_pot_full - E_pot_rest 
+    #E_pot_full  =  system.get_potential_energy()
+    #E_pot_rest  = partial.get_potential_energy()
+    
+    #NEW METHOD: Energy of molecules is saved during MD 
+    #               now we just pull that saved data
+    #               should be nearly 0 runtime per interval
+    #
+    #NOTICE:     I am switching to momenta based E_kin formula
+    #               this is because velocities need to be calculated
+    #               whereas the momenta is pulled from saved space
+
+    #Get potential energy of molecule
+    E_pot   = system.calc.results['energies'][0]
 
     #Get kinetic energy of molecule 
-    veloc   = system.get_velocities()
-    mass    = system.get_masses()
-    E_kin_a = 0.5 * mass[0] * np.dot(veloc[0], veloc[0])
-    E_kin_b = 0.5 * mass[1] * np.dot(veloc[1], veloc[1])
+    momenta = system.arrays['momenta']
+    masses  = system.arrays['masses' ]
+    E_kin_a = (np.dot(momenta[0], momenta[0])) / (2 * masses[0])
+    E_kin_b = (np.dot(momenta[0], momenta[0])) / (2 * masses[0])
     E_kin   = E_kin_a + E_kin_b 
     
     #Sum up total molecular energy
@@ -381,10 +394,14 @@ def make_NVE_output(trajFile, csvFile):
                          'Kinetic Energy': [],
                          'Total Energy': []})
 
+    #NOTICE: Current runtime per loop is 0.002s
+    #           might be able to speed it up by 
+    #           filling a dict first then making a DF
+
     #Loop through trajectory, writting to output file
     for i in range(len(traj)):
         system = traj[i]
-        calc   = MvH_CO(atoms=system)
+        calc   = system.calc
         df     = track_dissipation(system, calc, i, df)
 
     #Write csv file
