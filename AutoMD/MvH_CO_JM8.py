@@ -368,7 +368,7 @@ class MvH_CO(Calculator):
 	https://doi.org/10.1021/acs.jpca.5b02611.
     """
 
-    implemented_properties = ['energy', 'forces']
+    implemented_properties = ['energy', 'forces', 'energies']
 
     # epsilon: Absolute minimum depth, default 11.230
     # rho0   : Exponential prefactor
@@ -492,25 +492,35 @@ class MvH_CO(Calculator):
 
         Calculator.calculate(self, atoms, properties, system_changes)
 
-        positions                      = atoms.get_positions()
-        E_Morse, F_Morse, E_molc_Morse = calculate_Morse(positions,
-										   **{k:self.parameters[k] for k in ('epsilon','rho0','r0')})
-		#print("Morse : E = %+.6e eV  |F| = %.6e" % (E_Morse,np.linalg.norm(F_Morse)) )
+        #Prep variables for doing calculations
+        positions    = atoms.get_positions()
+        morse_list   = ('epsilon', 'rho0', 'r0')
+        exch_list    = ('Acc', 'Aoo', 'Aco', 'Aoc', 'Bcc', 'Boo', 'Bco', 'Boc')
+        disp_list    = ('Ccc', 'Coo', 'Cco', 'Coc')
+        Morse_kwargs = {k:self.parameters[k] for k in morse_list}
+        Exch_kwargs  = {k:self.parameters[k] for k in  exch_list}
+        Disp_kwargs  = {k:self.parameters[k] for k in  disp_list}
 
-        E_Exch, F_Exch, E_molc_Exch = calculate_Exch(positions,
-                        **{k:self.parameters[k] for k in ('Acc','Aoo'
-                            ,'Aco','Aoc', 'Bcc','Boo','Bco','Boc')})
-        E_Disp, F_Disp, E_molc_Disp = calculate_Disp(positions,
-										**{k:self.parameters[k] for k in ('Ccc','Coo','Cco','Coc')})
+        #Execute calculations
+        E_Morse, F_Morse, E_molc_Morse = calculate_Morse(positions,
+                                                         **Morse_kwargs)
+        E_Exch, F_Exch, E_molc_Exch    = calculate_Exch( positions, 
+                                                         **Exch_kwargs)
+        E_Disp, F_Disp, E_molc_Disp    = calculate_Disp( positions, 
+                                                         **Disp_kwargs)
 
         cms_weights = self.get_cms_weights()
-        Coul_kwargs = {k:self.parameters[k] for k in ('r0','Qc','Qo','alphaC','alphaO')}
+        coul_list   = ('r0','Qc','Qo','alphaC','alphaO')
+        Coul_kwargs = {k:self.parameters[k] for k in coul_list}
+
         if not self.parameters.COCO_Q_VARIABLE:
             Coul_kwargs['alphaC']   = 0.0
             Coul_kwargs['alphaO']   = 0.0
         Coul_kwargs['coco_FQ_mode'] = self.parameters.COCO_FQ_MODE
         Coul_kwargs['coco_FX_mode'] = self.parameters.COCO_FX_MODE
-        E_Coul, F_Coul, E_molc_Coul = calculate_Coul(positions, cms_weights, **Coul_kwargs)
+        E_Coul, F_Coul, E_molc_Coul = calculate_Coul(positions, 
+                                                     cms_weights, 
+                                                     **Coul_kwargs)
 
         E_pair = E_Exch + E_Disp + E_Coul
         F_pair = F_Exch + F_Disp + F_Coul
