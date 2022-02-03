@@ -5,7 +5,7 @@ from scipy.constants import c
 from ase.io import read, write
 from ase import units, Atoms
 from ase.optimize import BFGS
-from .MvH_CO_JM8_edit import MvH_CO
+from .MvH_CO_JM8 import MvH_CO
 from ase.visualize import view
 from ase.vibrations import Vibrations
 from ase.md.verlet import VelocityVerlet
@@ -224,8 +224,7 @@ def run_verletMD(xyz, n=50000):
     #Open output file
     #outname = xyz.replace('.xyz', '_NVE.out')
     #out     = open(outname, 'w')
-    #f = lambda x=system, y=out: (
-    #        y.write(str(x.get_potential_energy() / len(x)) +'\n'))
+    #f = lambda x=system: (x.get_potential_energy())
 
     #Attach the lambda function to the MD, every 100 intervals
     #dyn.attach(f, interval=1)
