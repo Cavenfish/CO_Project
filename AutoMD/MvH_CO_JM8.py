@@ -16,7 +16,7 @@ def calculate_Morse(positions, epsilon, rho0, r0):
         F              = preF * expf * (expf - 1) * diff / r
         forces[2*i]   -= F
         forces[2*i+1] += F
-        E_molc[i]     += epsilon * expf * (expf - 2)
+        E_molc[i]     += (epsilon * expf * (expf - 2)) + epsilon
     
     # In order to normalize the minimal morse potential to zero,
     # the following energy will be added to change the zero point
@@ -66,8 +66,8 @@ def calculate_Disp(positions, Ccc,Coo,Cco,Coc):
             forces[2*j+1] += F
             E_molc[i]     += E
 	
-        energy = Ecc + Eoo + Eco + Eoc
-        return energy, forces, E_molc
+    energy = Ecc + Eoo + Eco + Eoc
+    return energy, forces, E_molc
 
 def V_exch(diff, Aij, Bij):
     r = sqrt(np.dot(diff, diff))
@@ -368,7 +368,7 @@ class MvH_CO(Calculator):
 	https://doi.org/10.1021/acs.jpca.5b02611.
     """
 
-    implemented_properties = ['energy', 'forces', 'energies']
+    implemented_properties = ['energy', 'forces']
 
     # epsilon: Absolute minimum depth, default 11.230
     # rho0   : Exponential prefactor
