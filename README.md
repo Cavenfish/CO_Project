@@ -12,11 +12,9 @@ written by Fabian Sies.
 
 This is a python package that improves workflow while running simulations 
 related to the CO Project. The config file contains several helpful
-functions that can be used to automate the process of running MD calculations.
+functions that can be used to automate the process of running MD calculations
 
-### Documentation for Functions
-
-#### prep_system
+### prep_system
 
 **`prep_system(xyz)`**
 
@@ -59,7 +57,7 @@ Parameters
 xyz: string
         A string pointing to an xyz file location.
 swap: list 
-	Indecies of the atoms being moved
+	Indices of the atoms being moved
 masses: list
 	Masses of the atoms being moved
 r: float
@@ -106,8 +104,119 @@ molecule. PARAMETERS CURRENTLY ONLY SUPPORT CO
 
 Parameters
 ----------
+nu: float
+	Vibrational frequency of molecule being excited (in wavenumbers cm^-1)
+n: integer
+	Excitation number 
+
+Returns
+-------
+r: float
+	Bond length of excited molecule
+
+Examples
+--------
+>>> import AutoMD as md
+>>> 
+>>> nu = 2100
+>>> n  = 1
+>>>
+>>> r  = md.Morse_excitaton(2100, 1)
+>>>
+>>> r
+1.212
+```
+
+### geo_opt
+
+**`geo_opt(xyz)`**
 
 ```
+Runs a BFGS geometry optimization on the system given
+
+Parameters
+----------
+xyz: string
+        A string pointing to an xyz file location.
+
+Returns
+-------
+opt_f: string
+	A string pointing to the optimized xyz file location
+
+Examples
+--------
+>>> import AutoMD as md
+>>>
+>>> xyz   = './your_file.xyz'
+>>>
+>>> opt_f = md.geo_opt(xyz)
+>>>
+>>> opt_f
+'./your_file_opt.xyz'
+```
+
+### calc_vibs
+
+**`calc_vibs(xyz)`**
+
+```
+Calculates the vibrational frequencies of a given system
+
+Parameters
+----------
+xyz: string
+        A string pointing to an xyz file location.
+
+Returns
+-------
+None
+
+Examples
+--------
+>>> import AutoMD as md
+>>> 
+>>> xyz = './your_file.xyz'
+>>>
+>>> md.calc_vibs(xyz)
+```
+
+### add_isotope
+
+**`add_isotope(xyz, pos, masses)`**
+
+```
+Adds a given isotope to a given system
+
+Parameters
+----------
+xyz: string
+        A string pointing to an xyz file location.
+pos: list
+	Indices of atoms being replaced
+masses: list
+	Masses of the isotopic atoms
+
+Returns
+-------
+new_name: string
+	A string pointing to the newly made xyz file
+
+Examples
+--------
+>>> import AutoMD as md
+>>>
+>>> xyz      = './your_file.xyz'
+>>> pos      = [ 0,  1]
+>>> masses   = [12, 18]
+>>>
+>>> new_name = md.add_isotope(xyz, pos, masses)
+>>>
+>>> new_name
+'./your_file_isotope.xyz'  
+```
+
+
 
 ## Source Code
 
