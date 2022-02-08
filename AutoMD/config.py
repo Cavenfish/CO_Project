@@ -26,47 +26,28 @@ def prep_system(xyz):
 def stretch_molecule(xyz, swap, masses, r):
     #r excitation radius
 
-    #concept: reduce the problem to 1D
-
-    #CoM = (m_c*x_c + m_o*x_o)/(m_c + m_o)
-    # l  = |x_c - x_o|
-
-    #idea: -Find vector from C->O
-    #      -Make unitary vector of it (this will act as hat{x})
-    #      -Move C and O along opposite directions of pseudo hat{x}
-    #      -Weight the movement based on their mass ratio
-
     #Get pos from system
-    atoms, _ = prep_system(xyz)
-    pos      = atoms.get_positions()[swap]
+    system, _ = prep_system(xyz)
+    pos       = system.get_positions()[swap]
+    momenta   = system.arrays['momenta'][swap]
 
     #Define parameters 
-    bnd_vect = np.array(pos[1]) - np.array(pos[0])
-    norm     = np.linalg.norm(bnd_vect)
-    unt_vect = bnd_vect / norm
-    r_diff   = r - norm
-    move     = unt_vect*r_diff
+    R_vect = pos[0] - pos[1]
+    R_norm = np.linalg.norm(R_vect)
+    R_prim = r * (R_vect / R_norm)
 
-    #note: unit vector points from pos[0] to pos[1]
-    #ie. positive goes toward pos[1]
-    #    negative goes away from pos[1]
-    
-    #note: I weight the movement by the other atoms 
-    #      mass ratio since the displacement is larger
-    #      for smaller weight rather than larger weight
-    
-    m_ratio0 = masses[1] / sum(masses)
-    m_ratio1 = masses[0] / sum(masses)
-    new_pos0 = np.array(pos[0]) - (move * m_ratio0)
-    new_pos1 = np.array(pos[1]) + (move * m_ratio1)
-    
-    new_pos  = [new_pos0, new_pos1]
+    top    = masses[0]*pos[0] + masses[1]*pos[1] + masses[0]*R_prim
+    bottom = sum(masses)
+    r2p    = top/bottom
+    r1p    = R_prim + r2p
+        
+    new_pos  = [r1p, r2p]
 
     #Read in xyz file
-    system = read(xyz)
+    #system = read(xyz)
     
     #Make stretched molecule
-    new_atoms = Atoms('CO', positions=new_pos, masses=masses)
+    new_atoms = Atoms('CO', positions=new_pos, masses=masses, momenta=momenta)
 
     #Delete old atoms add new atoms
     del system[swap]
