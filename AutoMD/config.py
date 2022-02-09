@@ -278,63 +278,29 @@ def get_system_properties(system, calc, i, f):
 
     return
 
-def track_dissipation(system, calc, i, df):
-    #Idea for tracking single molecule energy:
-    #   -Get energy of full system
-    #   -Get energy of system minus molecule (slice system)
-    #   -Full system - sliced system =  single molecule + disp
-    #   -Single molecule + disp is what i want
-
-    #UPDATE: This method is extremly slow!
-    #           it takes roughly 0.07s per frame for 17CO cluster
-    #           it takes roughly 0.85s per frame for 60CO cluster
-
-    #TEMP SOLU: Return to using the single molecule slice
-    #               this won't include the effect of the
-    #               other molecules but should still give
-    #               some information. 
-
-    #Fastest method is to store molecule energ during MD
-    #Next best is calculate just molecular energy with 
-    #specific function that uses pair potential
-
-    #Set up a partial system Atoms object with calculator
-
+def track_dissipation(system, calc):
     #Get potential energy of molecule
-    #E_pot_full  =  system.get_potential_energy()
-    #E_pot_rest  = partial.get_potential_energy()
-    
-    #NEW METHOD: Energy of molecules is saved during MD 
-    #               now we just pull that saved data
-    #               should be nearly 0 runtime per interval
-    #
-    #NOTICE:     I am switching to momenta based E_kin formula
-    #               this is because velocities need to be calculated
-    #               whereas the momenta is pulled from saved space
-
-    #Get potential energy of molecule
-    E_pot   = system.calc.results['energies'][0]
+    try:
+        E_pot   = system.calc.results['energies'][0]
+    except:
+        E_pot   = 0
 
     #Get kinetic energy of molecule 
     momenta = system.arrays['momenta']
     masses  = system.arrays['masses' ]
     E_kin_a = (np.dot(momenta[0], momenta[0])) / (2 * masses[0])
-    E_kin_b = (np.dot(momenta[0], momenta[0])) / (2 * masses[0])
-    E_kin   = E_kin_a + E_kin_b 
+    E_kin_b = (np.dot(momenta[1], momenta[1])) / (2 * masses[1])
+    E_kin   = E_kin_a + E_kin_b
     
     #Sum up total molecular energy
     E_tot   = E_kin + E_pot
 
-    #Initiate row of data to populate DataFrame with
-    new_row = {'Time': i,
-               'Potential Energy': E_pot,
-               'Kinetic Energy': E_kin,
-               'Total Energy': E_tot}
-    
-    #Add data to DataFrame
-    df = df.append(new_row, ignore_index=True)
+    #Get total energy for sliced system
+    part  = system[0:2]
+    part.set_calculator(MvH_CO(atoms=part))
+    E_sli = part.get_potential_energy() + part.get_kinetic_energy()
 
-    return df
+    return [E_sli, E_pot, E_kin, E_tot]
 
 def make_NVT_output(logFile, csvFile):
     #Open, read and close log file
@@ -367,22 +333,27 @@ def make_NVT_output(logFile, csvFile):
 def make_NVE_output(trajFile, csvFile):
     #Open trajectory
     traj = Trajectory(trajFile)
-    
-    #Initiate DataFrame
-    df   = pd.DataFrame({'Time':[],
-                         'Potential Energy': [],
-                         'Kinetic Energy': [],
-                         'Total Energy': []})
 
-    #NOTICE: Current runtime per loop is 0.002s
-    #           might be able to speed it up by 
-    #           filling a dict first then making a DF
+    #Initiate dictionary
+    temp = {            'Time': [],
+               'Sliced Energy': [],
+            'Potential Energy': [],
+              'Kinetic Energy': [],
+                'Total Energy': [],}
 
     #Loop through trajectory, writting to output file
     for i in range(len(traj)):
         system = traj[i]
         calc   = system.calc
-        df     = track_dissipation(system, calc, i, df)
+        data   = track_dissipation(system, calc)
+        temp['Time'].append(i)
+        temp['Sliced Energy'].append(data[0])
+        temp['Potential Energy'].append(data[1])
+        temp['Kinetic Energy'].append(data[2])
+        temp['Total Energy'].append(data[3])
+
+    #Make DataFrame
+    df = pd.DataFrame(temp)
 
     #Write csv file
     df.to_csv(csvFile)
@@ -390,3 +361,10 @@ def make_NVE_output(trajFile, csvFile):
     #Return DataFrame in case its going to be used
     #If not, the call can ignore the return
     return df
+
+def radial_distribution(xyz):
+    atoms = read(xyz)
+
+    for i in range(len(atoms)//2):
+
+    return
