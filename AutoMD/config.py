@@ -1,6 +1,7 @@
 import sys, time
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 from scipy.constants import c
 from ase.io import read, write
 from ase import units, Atoms
@@ -11,6 +12,9 @@ from ase.vibrations import Vibrations
 from ase.md.verlet import VelocityVerlet
 from ase.io.trajectory import Trajectory
 from ase.md.langevin import Langevin
+from scipy.optimize import curve_fit
+
+
 
 def view_xyz(xyz):
     system = read(xyz)
@@ -158,22 +162,8 @@ def run_langevinMD(xyz, n=50000, mu=0.002, temp=10):
     traj     = Trajectory(trajname, 'w', system)
     dyn.attach(traj.write, interval=1)
 
-    #UPDATE: This adds unneccsary time to MD runtime
-    #            I am removing it
-    #Open output file
-    #outname = xyz.replace('.xyz', '_NVT.out')
-    #out     = open(outname, 'w')
-    #f = lambda x=system, y=out: (
-    #        y.write(str(x.get_potential_energy() / len(x)) +'\n'))
-
-    #Attach the lambda function to the MD, every 100 intervals
-    #dyn.attach(f, interval=1)
-
     #Run for n intervals (1 fs/interval)
     dyn.run(n)
-
-    #Save and close output file
-    #out.close()
 
     #Get last frame of simulation write xyz for it
     traj  = Trajectory(trajname)
@@ -198,23 +188,8 @@ def run_verletMD(xyz, n=50000):
     traj     = Trajectory(trajname, 'w', system)
     dyn.attach(traj.write, interval=1)
 
-
-    #UPDATE: This adds unneccsary time to MD runtime
-    #            I am removing it
-
-    #Open output file
-    #outname = xyz.replace('.xyz', '_NVE.out')
-    #out     = open(outname, 'w')
-    #f = lambda x=system: (x.get_potential_energy())
-
-    #Attach the lambda function to the MD, every 100 intervals
-    #dyn.attach(f, interval=1)
-
     #Run for n intervals (1 fs/interval)
     dyn.run(n)
-
-    #Save and close output file
-    #out.close()
 
     return trajname
 
@@ -362,9 +337,38 @@ def make_NVE_output(trajFile, csvFile):
     #If not, the call can ignore the return
     return df
 
+def half_life(df):
+    #Half Life formula 
+    def f(x, E, tau):
+        return E * np.exp(-x / tau)
+
+    #Prep passing values
+    x  = df['Time'] / 1000
+    y  = df['Total Energy']
+    p0 = [y[0], 1e3]
+
+    #Run curve fit
+    popt, pcov = curve_fit(f, x, y, p0)
+
+    #Make plot text
+    s = r'$\tau$ = ' + str(popt[1]/1e3)[:5] + ' ns'
+
+    #Plot fit and data
+    plt.plot(x, y, label='Total Energy')
+    plt.plot(x, f(x, *popt), label='Exponential Fit')
+    plt.text(min(x), min(y), s)
+    plt.ylabel('Energy (eV)')
+    plt.xlabel('Time (ps)')
+    plt.title('Vibrational Energy Dissipation')
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+    
+    return popt
+
 def radial_distribution(xyz):
     atoms = read(xyz)
 
-    for i in range(len(atoms)//2):
+    #for i in range(len(atoms)//2):
 
     return
