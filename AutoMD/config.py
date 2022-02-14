@@ -13,19 +13,30 @@ from ase.md.verlet import VelocityVerlet
 from ase.io.trajectory import Trajectory
 from ase.md.langevin import Langevin
 from scipy.optimize import curve_fit
-
+from scipy.signal import savgol_filter
 
 
 def view_xyz(xyz):
     system = read(xyz)
     view(system)
-    return 
+    return
 
 def prep_system(xyz):
     system = read(xyz)
     calc   = MvH_CO(atoms=system)
     system.set_calculator(calc)
-    return system, calc 
+    return system, calc
+
+def CoM(pos, masses):
+    if not isinstance(pos, np.ndarray):
+        pos = np.array(pos)
+
+    M   = sum(masses)
+    xcm = sum(masses * pos[:,0])/M
+    ycm = sum(masses * pos[:,1])/M
+    zcm = sum(masses * pos[:,2])/M
+
+    return np.array([xcm,ycm,zcm])
 
 def stretch_molecule(xyz, swap, masses, r):
     #r excitation radius
@@ -35,7 +46,7 @@ def stretch_molecule(xyz, swap, masses, r):
     pos       = system.get_positions()[swap]
     momenta   = system.arrays['momenta'][swap]
 
-    #Define parameters 
+    #Define parameters
     R_vect = pos[0] - pos[1]
     R_norm = np.linalg.norm(R_vect)
     R_prim = r * (R_vect / R_norm)
@@ -44,12 +55,12 @@ def stretch_molecule(xyz, swap, masses, r):
     bottom = sum(masses)
     r2p    = top/bottom
     r1p    = R_prim + r2p
-        
+
     new_pos  = [r1p, r2p]
 
     #Read in xyz file
     #system = read(xyz)
-    
+
     #Make stretched molecule
     new_atoms = Atoms('CO', positions=new_pos, masses=masses, momenta=momenta)
 
@@ -98,7 +109,7 @@ def geo_opt(xyz):
 
     #Make trajectory string
     traj  = xyz.replace('.xyz', '_opt.traj')
-    
+
     #Run BFGS optimization of geometry
     opt   = BFGS(system, trajectory=traj)
     opt.run(fmax=0.0001)
@@ -127,7 +138,7 @@ def add_isotope(xyz, pos, masses):
     system    = read(xyz)
 
     #Get atom positions
-    positions = [system.get_positions()[pos[0]], 
+    positions = [system.get_positions()[pos[0]],
                  system.get_positions()[pos[1]]]
 
     #Make new atoms but with isotopic masses
@@ -151,7 +162,7 @@ def run_langevinMD(xyz, n=50000, mu=0.002, temp=10):
     logfile  = xyz.replace('.xyz', '_NVT.log')
 
     #Initiate MD simulation with Langevin thermometer
-    dyn      = Langevin(system, 
+    dyn      = Langevin(system,
                         1  * units.fs, #time interval
                         friction      = mu,
                         temperature_K = temp,
@@ -178,7 +189,7 @@ def run_verletMD(xyz, n=50000):
     system, calc = prep_system(xyz)
 
     #Define logfile name
-    logfile  = xyz.replace('.xyz', '_NVE.log') 
+    logfile  = xyz.replace('.xyz', '_NVE.log')
 
     #Initiate MD simulation with Verlet numerical method
     dyn      = VelocityVerlet(system, 1 * units.fs, logfile=logfile)
@@ -260,13 +271,13 @@ def track_dissipation(system, calc):
     except:
         E_pot   = 0
 
-    #Get kinetic energy of molecule 
+    #Get kinetic energy of molecule
     momenta = system.arrays['momenta']
     masses  = system.arrays['masses' ]
     E_kin_a = (np.dot(momenta[0], momenta[0])) / (2 * masses[0])
     E_kin_b = (np.dot(momenta[1], momenta[1])) / (2 * masses[1])
     E_kin   = E_kin_a + E_kin_b
-    
+
     #Sum up total molecular energy
     E_tot   = E_kin + E_pot
 
@@ -275,7 +286,30 @@ def track_dissipation(system, calc):
     part.set_calculator(MvH_CO(atoms=part))
     E_sli = part.get_potential_energy() + part.get_kinetic_energy()
 
-    return [E_sli, E_pot, E_kin, E_tot]
+    #Get kinetic energy contributions of excited molecule
+    pos      = system.arrays['positions']
+    velocs   = system.get_velocities()
+    one_vib  = calc_Evib(pos[0:2], masses[0:2], velocs[0:2])
+    one_rot  = calc_Erot(pos[0:2], masses[0:2], velocs[0:2])
+    one_tran = calc_Etran(pos[0:2], masses[0:2], velocs[0:2])
+
+    #Get kinetic energy contributions of all other molecules
+    N = len(pos) // 2
+    avg_vib = avg_rot = avg_tran = 0
+    for i in range(1, N):
+        a = i*2
+        b = a+2
+        avg_vib  += calc_Evib(pos[a:b], masses[a:b], velocs[a:b])
+        avg_rot  += calc_Erot(pos[a:b], masses[a:b], velocs[a:b])
+        avg_tran += calc_Etran(pos[a:b], masses[a:b], velocs[a:b])
+    avg_vib  /= N
+    avg_rot  /= N
+    avg_tran /= N
+
+    return_this = [E_sli, E_pot, E_kin, E_tot,
+                   avg_tran, avg_rot, avg_vib,
+                   one_tran, one_rot, one_vib]
+    return return_this
 
 def make_NVT_output(logFile, csvFile):
     #Open, read and close log file
@@ -285,7 +319,7 @@ def make_NVT_output(logFile, csvFile):
 
     #Get header row and its length
     head = data[0].split()
-    
+
     #Initiate dictionary
     temp = {}
 
@@ -295,7 +329,7 @@ def make_NVT_output(logFile, csvFile):
         for j in range(1,len(data)):
             temp[head[i]].append(float(data[j].split()[i]))
 
-    #Build DataFrame 
+    #Build DataFrame
     df = pd.DataFrame(temp)
 
     #Make csv file
@@ -303,7 +337,7 @@ def make_NVT_output(logFile, csvFile):
 
     #Return DataFrame in case its going to be used
     #If not, the call can ignore the return
-    return df 
+    return df
 
 def make_NVE_output(trajFile, csvFile):
     #Open trajectory
@@ -314,7 +348,13 @@ def make_NVE_output(trajFile, csvFile):
                'Sliced Energy': [],
             'Potential Energy': [],
               'Kinetic Energy': [],
-                'Total Energy': [],}
+                'Total Energy': [],
+            'Avg Trans Energy': [],
+            'Avg Rotat Energy': [],
+            'Avg Vibra Energy': [],
+            'One Trans Energy': [],
+            'One Rotat Energy': [],
+            'One Vibra Energy': []}
 
     #Loop through trajectory, writting to output file
     for i in range(len(traj)):
@@ -326,6 +366,12 @@ def make_NVE_output(trajFile, csvFile):
         temp['Potential Energy'].append(data[1])
         temp['Kinetic Energy'].append(data[2])
         temp['Total Energy'].append(data[3])
+        temp['Avg Trans Energy'].append(data[4])
+        temp['Avg Rotat Energy'].append(data[5])
+        temp['Avg Vibra Energy'].append(data[6])
+        temp['One Trans Energy'].append(data[7])
+        temp['One Rotat Energy'].append(data[8])
+        temp['One Vibra Energy'].append(data[9])
 
     #Make DataFrame
     df = pd.DataFrame(temp)
@@ -337,24 +383,26 @@ def make_NVE_output(trajFile, csvFile):
     #If not, the call can ignore the return
     return df
 
-def half_life(df):
-    #Half Life formula 
+def half_life(df, saveName):
+    #Half Life formula
     def f(x, E, tau):
         return E * np.exp(-x / tau)
 
     #Prep passing values
     x  = df['Time'] / 1000
     y  = df['Total Energy']
-    p0 = [y[0], 1e3]
+    y2 = savgol_filter(y, 5001, 2)
+    p0 = [np.average(y[0:10000]), 1]
 
     #Run curve fit
-    popt, pcov = curve_fit(f, x, y, p0)
+    popt, pcov = curve_fit(f, x, y2, p0)
 
     #Make plot text
     s = r'$\tau$ = ' + str(popt[1]/1e3)[:5] + ' ns'
 
     #Plot fit and data
     plt.plot(x, y, label='Total Energy')
+    plt.plot(x, y2, label='Savitzky-Golay Filter')
     plt.plot(x, f(x, *popt), label='Exponential Fit')
     plt.text(min(x), min(y), s)
     plt.ylabel('Energy (eV)')
@@ -362,9 +410,37 @@ def half_life(df):
     plt.title('Vibrational Energy Dissipation')
     plt.legend()
     plt.tight_layout()
-    plt.show()
-    
+    plt.savefig(saveName)
+    plt.close()
+
     return popt
+
+def calc_Evib(pos, masses, velocs):
+    mu    = (masses[0] * masses[1]) / sum(masses)
+    d     = pos[0] - pos[1]
+    ed    = d / np.linalg.norm(d)
+    vd    = np.dot(ed, velocs[0] - velocs[1])
+    E_vib = 0.5 * mu * np.dot(vd, vd)
+    return E_vib
+
+def calc_Erot(pos, masses, velocs):
+    com   = CoM(pos, masses)
+    E_rot = 0
+    for i in range(len(masses)):
+        r = pos[i] - com
+        v = velocs[i]
+        m = masses[i]
+        w = np.cross(r, v) / np.dot(r, r)
+        I = m * np.dot(r, r)
+
+        E_rot += 0.5 * I * np.dot(w, w)
+    return E_rot
+
+def calc_Etran(pos, masses, velocs):
+    mu     = (masses[0] * masses[1]) / sum(masses)
+    vCoM   = (masses[0]*velocs[0] + masses[1]*velocs[1]) / sum(masses)
+    E_tran = 0.5 * mu * vCoM
+    return E_tran
 
 def radial_distribution(xyz):
     atoms = read(xyz)
