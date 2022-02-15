@@ -415,6 +415,37 @@ def half_life(df, saveName):
 
     return popt
 
+def plot_energy_contributions(df, saveName):
+    x  = df['Time']/1000
+    y0 = savgol_filter(df['Avg Trans Energy'], 5001, 2)
+    y1 = savgol_filter(df['Avg Vibra Energy'], 5001, 2)
+    y2 = savgol_filter(df['Avg Rotat Energy'], 5001, 2)
+    y3 = savgol_filter(df['One Trans Energy'], 5001, 2)
+    y4 = savgol_filter(df['One Vibra Energy'], 5001, 2)
+    y5 = savgol_filter(df['One Rotat Energy'], 5001, 2)
+    
+    plt.plot(x, y0, label='Translational')
+    plt.plot(x, y1, label='Vibrational')
+    plt.plot(x, y2, lebel='Rotational')
+    plt.xlabel('Time (ps)')
+    plt.ylabel('Energy (eV)')
+    plt.title('Average Energy of non-Excited Molecules')
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(saveName.replace('.png', '_avg.png'))
+
+    plt.plot(x, y3, label='Translational')
+    plt.plot(x, y4, label='Vibrational')
+    plt.plot(x, y5, lebel='Rotational')
+    plt.xlabel('Time (ps)')
+    plt.ylabel('Energy (eV)')
+    plt.title('Average Energy of Excited Molecule')
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(saveName.replace('.png', '_one.png'))
+
+    return
+
 def calc_Evib(pos, masses, velocs):
     mu    = (masses[0] * masses[1]) / sum(masses)
     d     = pos[0] - pos[1]
@@ -463,11 +494,8 @@ def get_spherical_coords(xyz):
 
     return coords
 
-def get_subsurface_molecule():
-    return molecule
-
-def get_bulk_molcule():
-    return molecule
+def label_molecules(xyz):
+    return labels
 
 def radial_distribution(xyz):
     atoms = read(xyz)
