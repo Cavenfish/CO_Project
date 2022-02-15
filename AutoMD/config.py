@@ -542,12 +542,12 @@ def track_deltaE_vs_r(EList, pos, masses):
         cm    = CoM(pos[a:b], masses[a:b])
         diff  = cm - eCoM
         r     = np.sqrt(np.dot(diff,diff))
-        rList.append(rList)
+        rList.append(r)
 
     plt.plot(rList, EList)
     plt.show()
 
-    return
+    return rList
 
 def radial_distribution(xyz):
     atoms = read(xyz)
