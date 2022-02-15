@@ -302,9 +302,9 @@ def track_dissipation(system, calc):
         avg_vib  += calc_Evib(pos[a:b], masses[a:b], velocs[a:b])
         avg_rot  += calc_Erot(pos[a:b], masses[a:b], velocs[a:b])
         avg_tran += calc_Etran(pos[a:b], masses[a:b], velocs[a:b])
-    avg_vib  /= N
-    avg_rot  /= N
-    avg_tran /= N
+    avg_vib  /= (N-1)
+    avg_rot  /= (N-1)
+    avg_tran /= (N-1)
 
     return_this = [E_sli, E_pot, E_kin, E_tot,
                    avg_tran, avg_rot, avg_vib,
