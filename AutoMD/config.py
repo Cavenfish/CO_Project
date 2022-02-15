@@ -295,20 +295,21 @@ def track_dissipation(system, calc):
 
     #Get kinetic energy contributions of all other molecules
     N = len(pos) // 2
-    avg_vib = avg_rot = avg_tran = 0
+    all_vib = all_rot = all_tran = []
     for i in range(1, N):
         a = i*2
         b = a+2
-        avg_vib  += calc_Evib(pos[a:b], masses[a:b], velocs[a:b])
-        avg_rot  += calc_Erot(pos[a:b], masses[a:b], velocs[a:b])
-        avg_tran += calc_Etran(pos[a:b], masses[a:b], velocs[a:b])
-    avg_vib  /= (N-1)
-    avg_rot  /= (N-1)
-    avg_tran /= (N-1)
+        all_vib.append(calc_Evib(pos[a:b], masses[a:b], velocs[a:b]))
+        all_rot.append(calc_Erot(pos[a:b], masses[a:b], velocs[a:b]))
+        all_tran.append(calc_Etran(pos[a:b], masses[a:b], velocs[a:b]))
+    avg_vib  = sum(all_vib)  / (N-1)
+    avg_rot  = sum(all_rot)  / (N-1)
+    avg_tran = sum(all_tran) / (N-1)
 
     return_this = [E_sli, E_pot, E_kin, E_tot,
                    avg_tran, avg_rot, avg_vib,
-                   one_tran, one_rot, one_vib]
+                   one_tran, one_rot, one_vib,
+                   all_tran, all_rot, all_vib]
     return return_this
 
 def make_NVT_output(logFile, csvFile):
@@ -354,7 +355,10 @@ def make_NVE_output(trajFile, csvFile):
             'Avg Vibra Energy': [],
             'One Trans Energy': [],
             'One Rotat Energy': [],
-            'One Vibra Energy': []}
+            'One Vibra Energy': [],
+            'All Trans Energy': [],
+            'All Rotat Energy': [],
+            'All Vibra Energy': []}
 
     #Loop through trajectory, writting to output file
     for i in range(len(traj)):
@@ -372,6 +376,9 @@ def make_NVE_output(trajFile, csvFile):
         temp['One Trans Energy'].append(data[7])
         temp['One Rotat Energy'].append(data[8])
         temp['One Vibra Energy'].append(data[9])
+        temp['All Trans Energy'].append(data[10])
+        temp['All Rotat Energy'].append(data[11])
+        temp['All Vibra Energy'].append(data[12])
 
     #Make DataFrame
     df = pd.DataFrame(temp)
@@ -413,6 +420,32 @@ def half_life(df, saveName):
     plt.savefig(saveName)
     plt.close()
 
+
+    #Prep passing values
+    x  = df['Time'] / 1000
+    y  = df['Sliced Energy']
+    y2 = savgol_filter(y, 5001, 2)
+    p0 = [np.average(y[0:10000]), 1]
+
+    #Run curve fit
+    popt, pcov = curve_fit(f, x, y2, p0)
+
+    #Make plot text
+    s = r'$\tau$ = ' + str(popt[1]/1e3)[:5] + ' ns'
+
+    #Plot fit and data
+    plt.plot(x, y, label='Total Energy')
+    plt.plot(x, y2, label='Savitzky-Golay Filter')
+    plt.plot(x, f(x, *popt), label='Exponential Fit')
+    plt.text(min(x), min(y), s)
+    plt.ylabel('Energy (eV)')
+    plt.xlabel('Time (ps)')
+    plt.title('Vibrational Energy Dissipation')
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(saveName.replace('.png', '_sliced.png'))
+    plt.close()
+
     return popt
 
 def plot_energy_contributions(df, saveName):
@@ -426,23 +459,25 @@ def plot_energy_contributions(df, saveName):
     
     plt.plot(x, y0, label='Translational')
     plt.plot(x, y1, label='Vibrational')
-    plt.plot(x, y2, lebel='Rotational')
+    plt.plot(x, y2, label='Rotational')
     plt.xlabel('Time (ps)')
     plt.ylabel('Energy (eV)')
     plt.title('Average Energy of non-Excited Molecules')
     plt.legend()
     plt.tight_layout()
     plt.savefig(saveName.replace('.png', '_avg.png'))
+    plt.close()
 
     plt.plot(x, y3, label='Translational')
     plt.plot(x, y4, label='Vibrational')
-    plt.plot(x, y5, lebel='Rotational')
+    plt.plot(x, y5, label='Rotational')
     plt.xlabel('Time (ps)')
     plt.ylabel('Energy (eV)')
     plt.title('Average Energy of Excited Molecule')
     plt.legend()
     plt.tight_layout()
     plt.savefig(saveName.replace('.png', '_one.png'))
+    plt.close()
 
     return
 
