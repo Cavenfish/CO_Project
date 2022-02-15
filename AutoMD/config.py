@@ -442,6 +442,33 @@ def calc_Etran(pos, masses, velocs):
     E_tran = 0.5 * mu * np.dot(vCoM, vCoM)
     return E_tran
 
+def get_spherical_coords(xyz):
+    system = read(xyz)
+    pos    = system.arrays['positions']
+    masses = system.arrays['masses']
+    com    = CoM(pos, masses)
+    coords = []
+
+    for i in range(len(masses) // 2):
+        a     = i*2
+        b     = a+2
+        cm    = CoM(pos[a:b], masses[a,b])
+        x,y,z = cm
+        diff  = cm - com 
+        r     = np.sqrt(np.dot(diff, diff)) 
+        theta = np.arccos(z/r)
+        phi   = np.arctan2(y,x)
+
+        coords.append([r, theta, phi])
+
+    return coords
+
+def get_subsurface_molecule():
+    return molecule
+
+def get_bulk_molcule():
+    return molecule
+
 def radial_distribution(xyz):
     atoms = read(xyz)
 
