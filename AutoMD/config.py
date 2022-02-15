@@ -532,6 +532,23 @@ def get_spherical_coords(xyz):
 def label_molecules(xyz):
     return labels
 
+def track_deltaE_vs_r(EList, pos, masses):
+    eCoM   = CoM(pos[:2], masses[:2])
+
+    rList  = []
+    for i in range(1, len(masses)//2):
+        a     = i*2
+        b     = a+2
+        cm    = CoM(pos[a:b], masses[a:b])
+        diff  = cm - eCoM
+        r     = np.sqrt(np.dot(diff,diff))
+        rList.append(rList)
+
+    plt.plot(rList, EList)
+    plt.show()
+
+    return
+
 def radial_distribution(xyz):
     atoms = read(xyz)
 
