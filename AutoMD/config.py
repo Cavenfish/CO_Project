@@ -439,7 +439,7 @@ def calc_Erot(pos, masses, velocs):
 def calc_Etran(pos, masses, velocs):
     mu     = (masses[0] * masses[1]) / sum(masses)
     vCoM   = (masses[0]*velocs[0] + masses[1]*velocs[1]) / sum(masses)
-    E_tran = 0.5 * mu * vCoM
+    E_tran = 0.5 * mu * np.dot(vCoM, vCoM)
     return E_tran
 
 def radial_distribution(xyz):
