@@ -546,8 +546,8 @@ def track_deltaE_vs_r(EList, pos, masses):
         r     = np.sqrt(np.dot(diff,diff))
         rList.append(r)
 
-    plt.plot(rList, EList)
-    plt.show()
+    plt.scatter(rList, EList)
+    #plt.show()
 
     return rList
 
