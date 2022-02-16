@@ -295,7 +295,9 @@ def track_dissipation(system, calc):
 
     #Get kinetic energy contributions of all other molecules
     N = len(pos) // 2
-    all_vib = all_rot = all_tran = []
+    all_vib  = [] 
+    all_rot  = []
+    all_tran = []
     for i in range(1, N):
         a = i*2
         b = a+2
