@@ -1,4 +1,4 @@
-import sys, time
+import sys, time, os
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -57,9 +57,6 @@ def stretch_molecule(xyz, swap, masses, r):
     r1p    = R_prim + r2p
 
     new_pos  = [r1p, r2p]
-
-    #Read in xyz file
-    #system = read(xyz)
 
     #Make stretched molecule
     new_atoms = Atoms('CO', positions=new_pos, masses=masses, momenta=momenta)
@@ -133,19 +130,19 @@ def calc_vibs(xyz):
 
     return
 
-def add_isotope(xyz, pos, masses):
+def add_isotope(xyz, swap, masses):
     #Read in system
-    system    = read(xyz)
+    system, _ = prep_system(xyz)
 
     #Get atom positions
-    positions = [system.get_positions()[pos[0]],
-                 system.get_positions()[pos[1]]]
+    pos       = system.get_positions()[swap]
+    momenta   = system.arrays['momenta'][swap]
 
     #Make new atoms but with isotopic masses
-    new_atoms = Atoms('CO', positions=positions, masses=masses)
+    new_atoms = Atoms('CO', positions=pos, masses=masses, momenta=momenta)
 
     #Delete old atoms add new atoms
-    del system[pos]
+    del system[swap]
     system = new_atoms + system
 
     #Write XYZ file of system with isotope
@@ -450,14 +447,14 @@ def half_life(df, saveName):
 
     return popt
 
-def plot_energy_contributions(df, saveName):
+def plot_energy_contributions(df, saveName, n=5001):
     x  = df['Time']/1000
-    y0 = savgol_filter(df['Avg Trans Energy'], 5001, 2)
-    y1 = savgol_filter(df['Avg Vibra Energy'], 5001, 2)
-    y2 = savgol_filter(df['Avg Rotat Energy'], 5001, 2)
-    y3 = savgol_filter(df['One Trans Energy'], 5001, 2)
-    y4 = savgol_filter(df['One Vibra Energy'], 5001, 2)
-    y5 = savgol_filter(df['One Rotat Energy'], 5001, 2)
+    y0 = savgol_filter(df['Avg Trans Energy'], n, 2)
+    y1 = savgol_filter(df['Avg Vibra Energy'], n, 2)
+    y2 = savgol_filter(df['Avg Rotat Energy'], n, 2)
+    y3 = savgol_filter(df['One Trans Energy'], n, 2)
+    y4 = savgol_filter(df['One Vibra Energy'], n, 2)
+    y5 = savgol_filter(df['One Rotat Energy'], n, 2)
     
     plt.plot(x, y0, label='Translational')
     plt.plot(x, y1, label='Vibrational')
@@ -534,7 +531,7 @@ def get_spherical_coords(xyz):
 def label_molecules(xyz):
     return labels
 
-def track_deltaE_vs_r(EList, pos, masses):
+def track_E_vs_r(EList, pos, masses):
     eCoM   = CoM(pos[:2], masses[:2])
 
     rList  = []
