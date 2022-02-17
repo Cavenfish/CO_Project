@@ -154,7 +154,7 @@ def add_isotope(xyz, pos, masses):
 
     return new_name
 
-def run_langevinMD(xyz, n=50000, mu=0.002, temp=10):
+def run_langevinMD(xyz, n=50000, mu=0.002, temp=10, i=1000):
     #Prep system
     system, calc = prep_system(xyz)
 
@@ -171,7 +171,7 @@ def run_langevinMD(xyz, n=50000, mu=0.002, temp=10):
     #Attach a trajectory file to the MD, saving every interval
     trajname = xyz.replace('.xyz', '_NVT.traj')
     traj     = Trajectory(trajname, 'w', system)
-    dyn.attach(traj.write, interval=1)
+    dyn.attach(traj.write, interval=i)
 
     #Run for n intervals (1 fs/interval)
     dyn.run(n)
@@ -184,7 +184,7 @@ def run_langevinMD(xyz, n=50000, mu=0.002, temp=10):
 
     return fname
 
-def run_verletMD(xyz, n=50000):
+def run_verletMD(xyz, n=50000, i=100):
     #Prep system
     system, calc = prep_system(xyz)
 
@@ -197,7 +197,7 @@ def run_verletMD(xyz, n=50000):
     #Attach a trajectory file to the MD, saving every interval
     trajname = xyz.replace('.xyz', '_NVE.traj')
     traj     = Trajectory(trajname, 'w', system)
-    dyn.attach(traj.write, interval=1)
+    dyn.attach(traj.write, interval=i)
 
     #Run for n intervals (1 fs/interval)
     dyn.run(n)
