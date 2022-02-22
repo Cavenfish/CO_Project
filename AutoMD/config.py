@@ -395,10 +395,10 @@ def half_life(df, saveName):
         return E * np.exp(-x / tau)
 
     #Prep passing values
-    x  = df['Time'] / 1000
+    x  = df['Time'] / 10
     y  = df['Total Energy']
-    y2 = savgol_filter(y, 5001, 2)
-    p0 = [np.average(y[0:10000]), 1]
+    y2 = savgol_filter(y, 51, 2)
+    p0 = [np.average(y[0:100]), 1]
 
     #Run curve fit
     popt, pcov = curve_fit(f, x, y2, p0)
@@ -421,10 +421,10 @@ def half_life(df, saveName):
 
 
     #Prep passing values
-    x  = df['Time'] / 1000
+    x  = df['Time'] / 10
     y  = df['Sliced Energy']
-    y2 = savgol_filter(y, 5001, 2)
-    p0 = [np.average(y[0:10000]), 1]
+    y2 = savgol_filter(y, 51, 2)
+    p0 = [np.average(y[0:100]), 1]
 
     #Run curve fit
     popt, pcov = curve_fit(f, x, y2, p0)
