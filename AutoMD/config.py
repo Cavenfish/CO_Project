@@ -447,8 +447,8 @@ def half_life(df, saveName):
 
     return popt
 
-def plot_energy_contributions(df, saveName, n=5001):
-    x  = df['Time']/1000
+def plot_energy_contributions(df, saveName, n=51):
+    x  = df['Time']/10
     y0 = savgol_filter(df['Avg Trans Energy'], n, 2)
     y1 = savgol_filter(df['Avg Vibra Energy'], n, 2)
     y2 = savgol_filter(df['Avg Rotat Energy'], n, 2)

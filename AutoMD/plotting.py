@@ -1,6 +1,6 @@
 from .config import *
 
-def spaghetti_plot(csvDir, n=5001):
+def spaghetti_plot(csvDir, n=51):
 
     N     = len(os.listdir(csvDir))
     y_avg = 0
@@ -9,7 +9,7 @@ def spaghetti_plot(csvDir, n=5001):
             N -= 1
             continue
         df = pd.read_csv(csvDir + fname)
-        x  = df['Time']/1000
+        x  = df['Time']/10
         y  = savgol_filter(df['Total Energy'], n, 2)
         plt.plot(x, y)
 
@@ -28,7 +28,7 @@ def spaghetti_plot(csvDir, n=5001):
             N -= 1
             continue
         df = pd.read_csv(csvDir + fname)
-        x  = df['Time']/1000
+        x  = df['Time']/10
         y  = savgol_filter(df['Sliced Energy'], n, 2)
         plt.plot(x, y)
 
