@@ -1,4 +1,4 @@
-from .config import *
+from ..config import *
 
 def half_life(directory):
     tauList = []
