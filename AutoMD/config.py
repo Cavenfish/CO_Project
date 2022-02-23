@@ -292,7 +292,7 @@ def track_dissipation(system, calc):
 
     #Get kinetic energy contributions of all other molecules
     N = len(pos) // 2
-    all_vib  = [] 
+    all_vib  = []
     all_rot  = []
     all_tran = []
     for i in range(1, N):
@@ -447,39 +447,6 @@ def half_life(df, saveName):
 
     return popt
 
-def plot_energy_contributions(df, saveName, n=51):
-    x  = df['Time']/10
-    y0 = savgol_filter(df['Avg Trans Energy'], n, 2)
-    y1 = savgol_filter(df['Avg Vibra Energy'], n, 2)
-    y2 = savgol_filter(df['Avg Rotat Energy'], n, 2)
-    y3 = savgol_filter(df['One Trans Energy'], n, 2)
-    y4 = savgol_filter(df['One Vibra Energy'], n, 2)
-    y5 = savgol_filter(df['One Rotat Energy'], n, 2)
-    
-    plt.plot(x, y0, label='Translational')
-    plt.plot(x, y1, label='Vibrational')
-    plt.plot(x, y2, label='Rotational')
-    plt.xlabel('Time (ps)')
-    plt.ylabel('Energy (eV)')
-    plt.title('Average Energy of non-Excited Molecules')
-    plt.legend()
-    plt.tight_layout()
-    plt.savefig(saveName.replace('.png', '_avg.png'))
-    plt.close()
-
-    plt.plot(x, y3, label='Translational')
-    plt.plot(x, y4, label='Vibrational')
-    plt.plot(x, y5, label='Rotational')
-    plt.xlabel('Time (ps)')
-    plt.ylabel('Energy (eV)')
-    plt.title('Average Energy of Excited Molecule')
-    plt.legend()
-    plt.tight_layout()
-    plt.savefig(saveName.replace('.png', '_one.png'))
-    plt.close()
-
-    return
-
 def calc_Evib(pos, masses, velocs):
     mu    = (masses[0] * masses[1]) / sum(masses)
     d     = pos[0] - pos[1]
@@ -519,8 +486,8 @@ def get_spherical_coords(xyz):
         b     = a+2
         cm    = CoM(pos[a:b], masses[a,b])
         x,y,z = cm
-        diff  = cm - com 
-        r     = np.sqrt(np.dot(diff, diff)) 
+        diff  = cm - com
+        r     = np.sqrt(np.dot(diff, diff))
         theta = np.arccos(z/r)
         phi   = np.arctan2(y,x)
 
