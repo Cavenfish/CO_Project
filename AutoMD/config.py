@@ -389,64 +389,6 @@ def make_NVE_output(trajFile, csvFile):
     #If not, the call can ignore the return
     return df
 
-def half_life(df, saveName):
-    #Half Life formula
-    def f(x, E, tau):
-        return E * np.exp(-x / tau)
-
-    #Prep passing values
-    x  = df['Time'] / 10
-    y  = df['Total Energy']
-    y2 = savgol_filter(y, 51, 2)
-    p0 = [np.average(y[0:100]), 1]
-
-    #Run curve fit
-    popt, pcov = curve_fit(f, x, y2, p0)
-
-    #Make plot text
-    s = r'$\tau$ = ' + str(popt[1]/1e3)[:5] + ' ns'
-
-    #Plot fit and data
-    plt.plot(x, y, label='Total Energy')
-    plt.plot(x, y2, label='Savitzky-Golay Filter')
-    plt.plot(x, f(x, *popt), label='Exponential Fit')
-    plt.text(min(x), min(y), s)
-    plt.ylabel('Energy (eV)')
-    plt.xlabel('Time (ps)')
-    plt.title('Vibrational Energy Dissipation')
-    plt.legend()
-    plt.tight_layout()
-    plt.savefig(saveName)
-    plt.close()
-
-
-    #Prep passing values
-    x  = df['Time'] / 10
-    y  = df['Sliced Energy']
-    y2 = savgol_filter(y, 51, 2)
-    p0 = [np.average(y[0:100]), 1]
-
-    #Run curve fit
-    popt, pcov = curve_fit(f, x, y2, p0)
-
-    #Make plot text
-    s = r'$\tau$ = ' + str(popt[1]/10)[:5] + ' ns'
-
-    #Plot fit and data
-    plt.plot(x, y, label='Total Energy')
-    plt.plot(x, y2, label='Savitzky-Golay Filter')
-    plt.plot(x, f(x, *popt), label='Exponential Fit')
-    plt.text(min(x), min(y), s)
-    plt.ylabel('Energy (eV)')
-    plt.xlabel('Time (ps)')
-    plt.title('Vibrational Energy Dissipation')
-    plt.legend()
-    plt.tight_layout()
-    plt.savefig(saveName.replace('.png', '_sliced.png'))
-    plt.close()
-
-    return popt
-
 def calc_Evib(pos, masses, velocs):
     mu    = (masses[0] * masses[1]) / sum(masses)
     d     = pos[0] - pos[1]
