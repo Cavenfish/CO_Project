@@ -53,13 +53,13 @@ def energy_contributions(csvDir, n=51):
          'Average Energy of non-Excited Molecules')
 
     plot(avg, 'oneTrans.png', 'Translational', 'One Trans Energy',
-         'Energy of non-Excited Molecule')
+         'Energy of Excited Molecule')
 
     plot(avg, 'oneRot.png', 'Rotational', 'One Rotat Energy',
-         'Energy of non-Excited Molecule')
+         'Energy of Excited Molecule')
 
     plot(avg, 'oneVibra.png', 'Vibrational', 'One Vibra Energy',
-         'Energy of non-Excited Molecule')
+         'Energy of Excited Molecule')
 
     plot(avg, 'avg.png', 'Translational', 'Avg Trans Energy',
          'Average Energy of non-Excited Molecules',
