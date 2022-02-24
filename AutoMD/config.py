@@ -430,7 +430,7 @@ def half_life(df, saveName):
     popt, pcov = curve_fit(f, x, y2, p0)
 
     #Make plot text
-    s = r'$\tau$ = ' + str(popt[1]/1e3)[:5] + ' ns'
+    s = r'$\tau$ = ' + str(popt[1]/10)[:5] + ' ns'
 
     #Plot fit and data
     plt.plot(x, y, label='Total Energy')
