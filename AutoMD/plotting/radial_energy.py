@@ -19,7 +19,7 @@ def radial_energy(csvDir, trajDir):
     
     def prep_data(prop):
         flag = True
-        tmp  = {'t':[], 'r1':[], 'r2':[], 'r3':[]}
+        tmp  = {'t':[], 'r1':[], 'r2':[], 'r3':[], 'r4':[]}
         N    = 0
         for fname in os.listdir(csvDir):
             if '.csv' not in fname:
@@ -46,31 +46,44 @@ def radial_energy(csvDir, trajDir):
                 r1  = sum(EList[(2.5 < rList) & (rList <  4.5)])
                 r2  = sum(EList[(6.0 < rList) & (rList <  8.0)])
                 r3  = sum(EList[(9.0 < rList) & (rList < 11.0)])
+                r4  = sum(EList[rList > 11.0])
 
                 r1 /= len(rList[(2.5 < rList) & (rList <  4.5)])
                 r2 /= len(rList[(6.0 < rList) & (rList <  8.0)])
                 r3 /= len(rList[(9.0 < rList) & (rList < 11.0)])
+                r4 /= len(rList[rList > 11.0])
 
                 if flag:
                     tmp['t' ].append(time)
                     tmp['r1'].append(r1)
                     tmp['r2'].append(r2)
                     tmp['r3'].append(r3)
+                    tmp['r4'].append(r4)
                 else:
                     tmp['r1'][i] += r1
                     tmp['r2'][i] += r2
                     tmp['r3'][i] += r3
+                    tmp['r4'][i] += r4
             N   += 1
             flag = False
         
         tmp['r1'] = np.array(tmp['r1']) / N
         tmp['r2'] = np.array(tmp['r2']) / N
         tmp['r3'] = np.array(tmp['r3']) / N
+        tmp['r4'] = np.array(tmp['r4']) / N
         
         df = pd.DataFrame(tmp)
         return df
     
     df = prep_data('All Vibra Energy')
-    df.plot('t', ['r1', 'r2', 'r3'])
+    df.plot('t', ['r1', 'r2', 'r3', 'r4'])
+    plt.show()
+
+    df = prep_data('All Trans Energy')
+    df.plot('t', ['r1', 'r2', 'r3', 'r4'])
+    plt.show()
+
+    df = prep_data('All Rotat Energy')
+    df.plot('t', ['r1', 'r2', 'r3', 'r4'])
     plt.show()
     return
