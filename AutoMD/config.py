@@ -126,8 +126,9 @@ def calc_vibs(xyz):
     #Run vibrational analysis
     vib = Vibrations(system, delta=0.0001)
     vib.run()
-    vib.summary()
-
+    vib.summary(log=xyz.replace('.xyz', '_vib.out'))
+    vib.write_dos(xyz.replace('.xyz', '_vibDOS.out'))
+    vib.clean()
     return
 
 def add_isotope(xyz, swap, masses):
