@@ -17,11 +17,8 @@ def energy_spaghetti(csvDir, n=51):
         return df2
 
     def loop(property, ext):
-        N     = len(os.listdir(csvDir))
-        y_avg = 0
         for fname in os.listdir(csvDir):
             if '.csv' not in fname:
-                N -= 1
                 continue
             df = pd.read_csv(csvDir + fname)
             df = prep_data(df, property)
@@ -32,7 +29,7 @@ def energy_spaghetti(csvDir, n=51):
                 y  = savgol_filter(df[key], n, 2)
                 plt.plot(x, y)
 
-            plt.savefig(csvDir + fname.split('_')[0] + ext)
+            plt.savefig(csvDir + fname.split('_')[0].strip('.csv') + ext)
             plt.close()
         return
     
