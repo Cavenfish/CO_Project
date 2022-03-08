@@ -186,7 +186,7 @@ def run_langevinMD(xyz, n=50000, mu=0.002, temp=10, i=1000):
 
     return fname
 
-def run_verletMD(xyz, n=50000, i=100):
+def run_verletMD(xyz, n=50000, i=100, ts=1):
     #Prep system
     system, calc = prep_system(xyz)
 
@@ -194,7 +194,7 @@ def run_verletMD(xyz, n=50000, i=100):
     logfile  = xyz.replace('.xyz', '_NVE.log')
 
     #Initiate MD simulation with Verlet numerical method
-    dyn      = VelocityVerlet(system, 1 * units.fs, logfile=logfile)
+    dyn      = VelocityVerlet(system, ts * units.fs, logfile=logfile)
 
     #Attach a trajectory file to the MD, saving every interval
     trajname = xyz.replace('.xyz', '_NVE.traj')
