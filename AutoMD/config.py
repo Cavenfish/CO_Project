@@ -87,7 +87,8 @@ def Morse_excitation(nu, n):
     r_e   =  1.1282       #Angstrom
     omega = nu * c * 100  #s^-1
     hbar  =  6.582119e-16 #eV * s
-    V_mor = (n + 1/2) * hbar * omega
+    tmp   = (n + 1/2) * hbar * omega
+    V_mor = tmp - ( (tmp**2) / (4 * D_e) )
 
     #V_mor = D_e[1-exp(-beta(r_A-r_e))]^2
 
