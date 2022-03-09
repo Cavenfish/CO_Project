@@ -16,7 +16,9 @@ def spaghetti_plot(csvDir, n=51):
             y_avg += y
 
         y_avg /= N
-        plt.plot(x, y_avg, '--', label='Average')
+        plt.plot(x, y_avg, '--', label='Average', color='black', lw=2)
+        plt.ylabel('Energy (eV)')
+        plt.xlabel('Time (ps)')
         plt.legend()
         plt.savefig(csvDir + ext)
         plt.close()
