@@ -404,12 +404,12 @@ def calc_Evib(pos, masses, velocs):
     return E_vib
 
 def calc_Erot(pos, masses, velocs):
-    #Need to substract CoM velocity before calculationg rotaational energy
+    vCoM  = (masses[0]*velocs[0] + masses[1]*velocs[1]) / sum(masses)
     com   = CoM(pos, masses)
     E_rot = 0
     for i in range(len(masses)):
         r = pos[i] - com
-        v = velocs[i]
+        v = velocs[i] - vCoM
         m = masses[i]
         w = np.cross(r, v) / np.dot(r, r)
         I = m * np.dot(r, r)
