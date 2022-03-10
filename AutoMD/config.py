@@ -345,7 +345,7 @@ def make_NVT_output(logFile, csvFile):
     #If not, the call can ignore the return
     return df
 
-def make_NVE_output(trajFile, csvFile):
+def make_NVE_output(trajFile, csvFile, ts):
     #Open trajectory
     traj = Trajectory(trajFile)
 
@@ -370,7 +370,7 @@ def make_NVE_output(trajFile, csvFile):
         system = traj[i]
         calc   = system.calc
         data   = track_dissipation(system, calc)
-        temp['Time'].append(i)
+        temp['Time'].append(i * ts)
         temp['Sliced Energy'].append(data[0])
         temp['Potential Energy'].append(data[1])
         temp['Kinetic Energy'].append(data[2])

@@ -28,6 +28,15 @@ def radial_energy(csvDir, trajDir):
         return rList
     
     def prep_data(prop):
+        def get_r(low, high):
+            r = sum(EList[(low < rList) & (rList <  high)])
+            try:
+                r /= len(rList[(low < rList) & (rList <  high)])
+            except:
+                r = 0
+
+            return r
+
         flag = True
         tmp  = {'t':[], 'r1':[], 'r2':[], 'r3':[]}
         N    = 0
@@ -53,13 +62,9 @@ def radial_energy(csvDir, trajDir):
                 EList = np.array(literal_eval(df[prop][i]))
                 rList = np.array(get_rList(traj[i]))
                 
-                r1  = sum(EList[(2.5 < rList) & (rList <  4.5)])
-                r2  = sum(EList[(6.0 < rList) & (rList <  8.0)])
-                r3  = sum(EList[(9.0 < rList) & (rList < 11.0)])
-
-                r1 /= len(rList[(2.5 < rList) & (rList <  4.5)])
-                r2 /= len(rList[(6.0 < rList) & (rList <  8.0)])
-                r3 /= len(rList[(9.0 < rList) & (rList < 11.0)])
+                r1  = get_r(2.5,  4.5)
+                r2  = get_r(6.0,  8.0)
+                r3  = get_r(9.0, 11.0)
 
                 if flag:
                     tmp['t' ].append(time)
