@@ -38,16 +38,58 @@ def CoM(pos, masses):
 
     return np.array([xcm,ycm,zcm])
 
-def excite_molecule():
-    return
+def Morse_energy(nu, n):
+    #Constants and unit conversions
+    D_e   = 11.2301       #eV
+    beta  =  0.6519       #Angstrom^-1
+    r_e   =  1.1282       #Angstrom
+    omega = nu * c * 100  #s^-1
+    hbar  =  6.582119e-16 #eV * s
+    tmp   = (n + 1/2) * hbar * omega
+    V_mor = tmp - ( (tmp**2) / (4 * D_e) )
+    return V_mor
 
-def stretch_molecule(xyz, swap, masses, r):
+def excite_molecule(xyz, swap, E):
+    #Get pos from system
+    system, _ = prep_system(xyz)
+    pos       = system.get_positions()[swap]
+    momenta   = system.arrays['momenta'][swap]
+    masses    = system.get_masses()[swap]
+
+    #Define parameters
+    R_vect = pos[0] - pos[1]
+    R_norm = np.linalg.norm(R_vect)
+    R_hat  = R_vect / R_norm
+
+    #Vector points from mol1 to mol0
+
+    #Get new momenta
+    a  = 2 * masses[0] * E
+    b  = 1 + (masses[0] / masses[1])
+    p0 = (np.sqrt(a/b) * R_hat) + momenta[0]
+    p1 = momenta[1] - p0
+
+    #Make excited molecule
+    new_atoms = Atoms('CO', positions=pos, masses=masses, momenta=[p0,p1])
+
+    #Delete old atoms add new atoms
+    del system[swap]
+    system = new_atoms + system
+
+    #Write XYZ file of system with isotope
+    new_name = xyz.replace('.xyz', '_excited.xyz')
+    write(new_name, system)
+
+    return new_name
+
+def stretch_molecule(xyz, swap, r):
     #r excitation radius
 
     #Get pos from system
     system, _ = prep_system(xyz)
     pos       = system.get_positions()[swap]
     momenta   = system.arrays['momenta'][swap]
+    masses    = system.get_masses()[swap]
 
     #Define parameters
     R_vect = pos[0] - pos[1]
