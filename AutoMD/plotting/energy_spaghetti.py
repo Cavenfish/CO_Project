@@ -22,7 +22,7 @@ def energy_spaghetti(csvDir, n=51):
                 continue
             df = pd.read_csv(csvDir + fname)
             df = prep_data(df, property)
-            x  = df['Time']/10
+            x  = df['Time']
             for key in df:
                 if 'Time' in key:
                     continue

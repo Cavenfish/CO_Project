@@ -22,7 +22,12 @@ def interaction_energy(csvDir):
 
     x = avg['Time']
     y = avg['Total Energy'] - avg['Sliced Energy']
-    plt.plot(x,y)
-    plt.show()
+    plt.plot(x, y, label='Interaction Energy')
+    plt.title('Interaction Energy of Excited Molecule with Cluster')
+    plt.ylabel('Energy (eV)')
+    plt.xlabel('Time (ps)')
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(csvDir + 'interaction_energy.png')
 
     return

@@ -9,7 +9,7 @@ def spaghetti_plot(csvDir, n=51):
                 N -= 1
                 continue
             df = pd.read_csv(csvDir + fname)
-            x  = df['Time']/10
+            x  = df['Time']
             y  = savgol_filter(df[property], n, 2)
             plt.plot(x, y)
 

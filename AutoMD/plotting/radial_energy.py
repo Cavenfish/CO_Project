@@ -58,7 +58,7 @@ def radial_energy(csvDir, trajDir):
                 n = len(df)
 
             for i in range(n):
-                time  = i * 0.1 # in ps 
+                time  = df['Time'][i]
                 EList = np.array(literal_eval(df[prop][i]))
                 rList = np.array(get_rList(traj[i]))
                 

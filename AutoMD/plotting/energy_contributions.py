@@ -25,7 +25,7 @@ def energy_contributions(csvDir, n=51):
 
     def plot(avg, ext, label, property, title, all=[]):
         saveName = csvDir + ext
-        x        = avg['Time']/10
+        x        = avg['Time']
         y        = savgol_filter(avg[property], n, 2)
         if all:
             y2   = savgol_filter(avg[all[0]], n, 2)

@@ -32,7 +32,7 @@ def half_life(csvDir, n=51):
             return (E0*np.exp(-x / tau)) + E1 - m*x
 
         saveName = csvDir + ext
-        x        = avg['Time']/10
+        x        = avg['Time']
         y        = avg[property]
         y2       = savgol_filter(y, n, 2)
         
