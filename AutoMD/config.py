@@ -67,7 +67,7 @@ def excite_molecule(xyz, swap, E):
     a  = 2 * masses[0] * E
     b  = 1 + (masses[0] / masses[1])
     p0 = (np.sqrt(a/b) * R_hat) + momenta[0]
-    p1 = momenta[1] - p0
+    p1 = momenta[1] - (np.sqrt(a/b) * R_hat)
 
     #Make excited molecule
     new_atoms = Atoms('CO', positions=pos, masses=masses, momenta=[p0,p1])
