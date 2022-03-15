@@ -30,6 +30,8 @@ def half_life(csvDir, n=51):
             return E - (r*x)
         def h(x, E0, tau, E1, m):
             return (E0*np.exp(-x / tau)) + E1 - m*x
+        def e(x, E0, tau0, E1, tau1):
+            return (E0 * np.exp(-x / tau0)) + (E1 * np.exp(-x / tau1))
 
         saveName = csvDir + ext
         x        = avg['Time']
