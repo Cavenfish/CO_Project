@@ -38,6 +38,41 @@ def CoM(pos, masses):
 
     return np.array([xcm,ycm,zcm])
 
+def trans_excite(xyz, swap, E):
+    #Get pos from system
+    system, _ = prep_system(xyz)
+    pos       = system.get_positions()[swap]
+    momenta   = system.arrays['momenta'][swap]
+    masses    = system.get_masses()[swap]
+    
+    #Get scalar value of velocity from E
+    mu = (masses[0] * masses[1])/sum(masses)
+    nu = np.sqrt( (2 * E)/(mu) )
+
+    #Get random unit vector
+    r = np.random.rand(3)
+    e = r / np.linalg.norm(r)
+
+    #Make velocity vector
+    v = nu * e 
+    
+    #Make new momenta
+    p0 = momenta[0] + masses[0] * v
+    p1 = momenta[1] + masses[1] * v
+
+    #Make excited molecule
+    new_atoms = Atoms('CO', positions=pos, masses=masses, momenta=[p0,p1])
+
+    #Delete old atoms add new atoms
+    del system[swap]
+    system = new_atoms + system
+
+    #Write XYZ file of system with isotope
+    new_name = xyz.replace('.xyz', '_excited.xyz')
+    write(new_name, system)
+
+    return new_name
+
 def Morse_energy(nu, n):
     #Constants and unit conversions
     D_e   = 11.2301       #eV
