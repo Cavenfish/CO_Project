@@ -38,6 +38,44 @@ def CoM(pos, masses):
 
     return np.array([xcm,ycm,zcm])
 
+def rotat_excite(xyz, swap, E):
+    #Get pos from system
+    system, _ = prep_system(xyz)
+    pos       = system.get_positions()[swap]
+    momenta   = system.arrays['momenta'][swap]
+    masses    = system.get_masses()[swap]
+
+    #Get CoM and V_CoM
+    vCoM  = (masses[0]*velocs[0] + masses[1]*velocs[1]) / sum(masses)
+    com   = CoM(pos, masses)
+
+    #Loop through particles
+    for i in range(len(masses)):
+        #Get r and m then use them to get I
+        r = pos[i] - com
+        m = masses[i]
+        I = m * np.dot(r, r)
+
+        #Get omega then use it to get v
+        w = np.sqrt( (2 * E) / I ) * np.random.rand(3)
+        v = np.cross(w, r)
+
+        #Update the particles momentum
+        momenta[i] += m*v
+
+    #Make excited molecule
+    new_atoms = Atoms('CO', positions=pos, masses=masses, momenta=momenta)
+
+    #Delete old atoms add new atoms
+    del system[swap]
+    system = new_atoms + system
+
+    #Write XYZ file of system with excited molecule
+    new_name = xyz.replace('.xyz', '_excited.xyz')
+    write(new_name, system)
+
+    return
+
 def trans_excite(xyz, swap, E):
     #Get pos from system
     system, _ = prep_system(xyz)
@@ -67,7 +105,7 @@ def trans_excite(xyz, swap, E):
     del system[swap]
     system = new_atoms + system
 
-    #Write XYZ file of system with isotope
+    #Write XYZ file of system with excited molecule
     new_name = xyz.replace('.xyz', '_excited.xyz')
     write(new_name, system)
 
