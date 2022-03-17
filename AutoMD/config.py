@@ -113,12 +113,10 @@ def trans_excite(xyz, swap, E):
 
 def Morse_energy(nu, n):
     #Constants and unit conversions
-    D_e   = 11.2301       #eV
-    beta  =  0.6519       #Angstrom^-1
-    r_e   =  1.1282       #Angstrom
-    omega = nu * c * 100  #s^-1
-    hbar  =  6.582119e-16 #eV * s
-    tmp   = (n + 1/2) * hbar * omega
+    D_e   = 11.2301  #eV
+    nu    = nu / 1e4 #um^-1
+    hc    = 1.239841 #eV um 
+    tmp   = (n + 1/2) * hc * nu
     V_mor = tmp - ( (tmp**2) / (4 * D_e) )
     return V_mor
 
@@ -197,12 +195,12 @@ def Morse_excitation(nu, n):
     #      if using an isotope, we need new values
 
     #Constants and unite conversions
-    D_e   = 11.2301       #eV
-    beta  =  0.6519       #Angstrom^-1
-    r_e   =  1.1282       #Angstrom
-    omega = nu * c * 100  #s^-1
-    hbar  =  6.582119e-16 #eV * s
-    tmp   = (n + 1/2) * hbar * omega
+    D_e   = 11.2301   #eV
+    beta  =  0.6519   #Angstrom^-1
+    r_e   =  1.1282   #Angstrom
+    nu    = nu / 1e4  #um^-1
+    hc    = 1.239841  #eV um 
+    tmp   = (n + 1/2) * hc * nu
     V_mor = tmp - ( (tmp**2) / (4 * D_e) )
 
     #V_mor = D_e[1-exp(-beta(r_A-r_e))]^2
