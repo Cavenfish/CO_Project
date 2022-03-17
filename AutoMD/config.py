@@ -46,22 +46,21 @@ def rotat_excite(xyz, swap, E):
     masses    = system.get_masses()[swap]
 
     #Get CoM and V_CoM
-    vCoM  = (masses[0]*velocs[0] + masses[1]*velocs[1]) / sum(masses)
+    vCoM  = (momenta[0] + momenta[1]) / sum(masses)
     com   = CoM(pos, masses)
 
-    #Loop through particles
-    for i in range(len(masses)):
-        #Get r and m then use them to get I
-        r = pos[i] - com
-        m = masses[i]
-        I = m * np.dot(r, r)
+    #Get r and m then use them to get I
+    r = pos[0] - com
+    m = masses[0]
+    I = m * np.dot(r, r)
 
-        #Get omega then use it to get v
-        w = np.sqrt( (2 * E) / I ) * np.random.rand(3)
-        v = np.cross(w, r)
+    #Get omega then use it to get v
+    w = np.sqrt( (2 * E) / I ) * np.random.rand(3)
+    v = np.cross(w, r)
 
-        #Update the particles momentum
-        momenta[i] += m*v
+    #Update the particles momentum
+    momenta[0] += m*v
+    momenta[1] -= m*v
 
     #Make excited molecule
     new_atoms = Atoms('CO', positions=pos, masses=masses, momenta=momenta)
@@ -74,7 +73,7 @@ def rotat_excite(xyz, swap, E):
     new_name = xyz.replace('.xyz', '_excited.xyz')
     write(new_name, system)
 
-    return
+    return new_name
 
 def trans_excite(xyz, swap, E):
     #Get pos from system
@@ -509,11 +508,17 @@ def make_NVE_output(trajFile, csvFile, ts):
     return df
 
 def calc_Evib(pos, masses, velocs):
+    #Calculate kinetic energy terms
     mu    = (masses[0] * masses[1]) / sum(masses)
     d     = pos[0] - pos[1]
     ed    = d / np.linalg.norm(d)
-    vd    = np.dot(ed, velocs[0] - velocs[1])
-    E_vib = 0.5 * mu * np.dot(vd, vd)
+    vd0   = np.dot(ed, velocs[0])
+    vd1   = np.dot(ed, velocs[1])
+    a     = 0.5 * masses[0] * np.dot(vd0, vd0)
+    b     = 0.5 * masses[1] * np.dot(vd1, vd1)
+
+    #Sum it all up
+    E_vib = a + b 
     return E_vib
 
 def calc_Erot(pos, masses, velocs):
