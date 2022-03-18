@@ -9,6 +9,7 @@ from .energy_spaghetti         import energy_spaghetti
 from .radial_energy            import radial_energy
 from .interaction_energy       import interaction_energy
 from .all_isotopes_dissipation import all_isotopes_dissipation
+from .surf_vs_subsurf          import surf_vs_subsurf
 
 __functions__ = [spaghetti_plot,
                  energy_contributions,

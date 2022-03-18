@@ -44,4 +44,6 @@ def surf_vs_subsurf(root):
         plt.close()
         return
 
+    plot('surfVsSub.png', 'Total Energy')
+    plot('surfVsSub_sliced.png', 'Sliced Energy')
     return
