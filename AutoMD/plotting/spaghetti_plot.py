@@ -19,6 +19,7 @@ def spaghetti_plot(csvDir, n=51):
         plt.plot(x, y_avg, '--', label='Average', color='black', lw=2)
         plt.ylabel('Energy (eV)')
         plt.xlabel('Time (ps)')
+        plt.title('Vibrational Energy Dissipation')
         plt.legend()
         plt.savefig(csvDir + ext)
         plt.close()
