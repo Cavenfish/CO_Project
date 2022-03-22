@@ -62,9 +62,9 @@ def radial_energy(csvDir, trajDir):
                 EList = np.array(literal_eval(df[prop][i]))
                 rList = np.array(get_rList(traj[i]))
                 
-                r1  = get_r(2.5,  4.5)
-                r2  = get_r(6.0,  8.0)
-                r3  = get_r(9.0, 11.0)
+                r1  = get_r(0.0,  4.5)
+                r2  = get_r(4.5,  8.0)
+                r3  = get_r(8.0, 11.0)
 
                 if flag:
                     tmp['t' ].append(time)
