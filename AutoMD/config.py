@@ -194,11 +194,11 @@ def Morse_excitation(nu, n):
     #      if using an isotope, we need new values
 
     #Constants and unite conversions
-    D_e   = 11.2301   #eV
-    beta  =  0.6519   #Angstrom^-1
-    r_e   =  1.1282   #Angstrom
-    nu    = nu / 1e4  #um^-1
-    hc    = 1.239841  #eV um 
+    D_e   = 11.2301  #eV
+    beta  =  2.627   #Angstrom^-1
+    r_e   =  1.1282  #Angstrom
+    nu    = nu / 1e4   #um^-1
+    hc    = 1.239841   #eV um 
     tmp   = (n + 1/2) * hc * nu
     V_mor = tmp - ( (tmp**2) / (4 * D_e) )
 
