@@ -35,10 +35,10 @@ def surf_vs_subsurf(root):
             y       = avg[property]
             plt.plot(x,  y, label=labels[dir])
 
-        plt.xlabel('Time (ps)')
-        plt.ylabel('Energy (eV)')
-        plt.title('Vibrational Energy Dissipation')
-        plt.legend()
+        plt.xlabel('Time (ps)',   fontsize=15)
+        plt.ylabel('Energy (eV)', fontsize=15)
+        plt.title('Vibrational Energy Dissipation', fontsize=20)
+        plt.legend(fontsize=10)
         plt.tight_layout()
         plt.savefig(saveName)
         plt.close()

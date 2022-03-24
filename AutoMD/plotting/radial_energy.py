@@ -4,9 +4,10 @@ from ast      import literal_eval
 def radial_energy(csvDir, trajDir):
     def plot(df, title, labels, saveName):
         df.plot('t', ['r1', 'r2', 'r3'], label=labels)
-        plt.title(title)
-        plt.xlabel('Time (ps)')
-        plt.ylabel('Energy (eV)')
+        plt.title(title, fontsize=20)
+        plt.xlabel('Time (ps)',   fontsize=15)
+        plt.ylabel('Energy (eV)', fontsize=15)
+        plt.legend(fontsize=10)
         plt.tight_layout()
         plt.savefig(csvDir + saveName)
         plt.close()
