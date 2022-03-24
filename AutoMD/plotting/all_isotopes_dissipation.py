@@ -1,4 +1,5 @@
 from ..config import *
+from operator import itemgetter
 
 def all_isotopes_dissipation(root):
     def get_avg(csvDir):
@@ -26,6 +27,9 @@ def all_isotopes_dissipation(root):
         saveName = root + ext
         labels   = {'co':'CO', '13co':r'$^{13}$CO', 
                     '13c18o':r'$^{13}$C$^{18}$O', 'c18o':r'C$^{18}$O'}
+        shapes   = {'co':'-', '13co':':', 'c18o':'--', '13c18o':'-.'}
+        colors   = {'co':(1,0,1,1), '13co':(0,0.9,0.9,1), 
+                    '13c18o':(0.27,0.04,0.16,1), 'c18o':(0.94,0.31,0.15,1)}   
         for dir in os.listdir(root):
             if not os.path.isdir(root + dir):
                 continue
@@ -34,12 +38,20 @@ def all_isotopes_dissipation(root):
             avg     = get_avg(csvDir)
             x       = avg['Time']
             y       = avg[property]
-            plt.plot(x,  y, label=labels[dir])
+            l       = labels[dir]
+            c       = colors[dir]
+            s       = shapes[dir]
+            plt.plot(x,  y, label=l, color=c, ls=s)
         
         plt.xlabel('Time (ps)',   fontsize=15)
         plt.ylabel('Energy (eV)', fontsize=15)
         plt.title('Vibrational Energy Dissipation', fontsize=20)
-        plt.legend(fontsize=10)
+
+        h, l = plt.gca().get_legend_handles_labels()
+        tmp  = sorted(zip(h,l), key=itemgetter(1))
+        h, l = zip(*tmp)
+        plt.legend(h, l, fontsize=10)
+
         plt.tight_layout()
         plt.savefig(saveName)
         plt.close()
