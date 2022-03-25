@@ -1,4 +1,5 @@
 from ..config import *
+import matplotlib as mpl
 
 def energy_contributions(csvDir, n=51):
     def get_avg():
@@ -24,6 +25,8 @@ def energy_contributions(csvDir, n=51):
         return avg
 
     def plot(avg, ext, label, property, title, all=[]):
+        mpl.rcParams['axes.prop_cycle'] = mpl.cycler(
+            color=[(1,0,1,1), (0.27,0.04,0.16,1), (0,0.75,0.75,1)])
         saveName = csvDir + ext
         x        = avg['Time']
         y        = savgol_filter(avg[property], n, 2)
@@ -35,10 +38,10 @@ def energy_contributions(csvDir, n=51):
         plt.plot(x,  y, label=label)
         plt.xlabel('Time (ps)',   fontsize=15)
         plt.ylabel('Energy (eV)', fontsize=15)
-        plt.title(title, fontsize=20)
+        plt.title(title, fontsize=18)
         plt.legend(fontsize=10)
         plt.tight_layout()
-        plt.savefig(saveName)
+        plt.savefig(saveName, transparent=True)
         plt.close()
         return
 

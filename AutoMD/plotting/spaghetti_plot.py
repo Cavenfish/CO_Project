@@ -13,7 +13,7 @@ def spaghetti_plot(csvDir, n=51):
             x  = df['Time']
             y  = savgol_filter(df[property], n, 2)
             plt.plot(x, y, color=(c/255,0,c/255))
-            c -= 1.5 
+            c -= 1.5
 
             y_avg += y
 
@@ -23,7 +23,7 @@ def spaghetti_plot(csvDir, n=51):
         plt.xlabel('Time (ps)',   fontsize=15)
         plt.title('Vibrational Energy Dissipation', fontsize=20)
         plt.legend(fontsize=10)
-        plt.savefig(csvDir + ext)
+        plt.savefig(csvDir + ext, transparent=True)
         plt.close()
         return
 

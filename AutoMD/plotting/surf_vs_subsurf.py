@@ -25,6 +25,7 @@ def surf_vs_subsurf(root):
     def plot(ext, property):
         saveName = root + ext
         labels   = {'surf':'Surface', 'subsurf':'Sub-Surface'}
+        colors   = {'surf':(1,0,1,1), 'subsurf':(0.27,0.04,0.16,1)}
         for dir in os.listdir(root):
             if not os.path.isdir(root + dir):
                 continue
@@ -33,14 +34,16 @@ def surf_vs_subsurf(root):
             avg     = get_avg(csvDir)
             x       = avg['Time']
             y       = avg[property]
-            plt.plot(x,  y, label=labels[dir])
+            l       = labels[dir]
+            c       = colors[dir]
+            plt.plot(x,  y, label=l, color=c)
 
         plt.xlabel('Time (ps)',   fontsize=15)
         plt.ylabel('Energy (eV)', fontsize=15)
         plt.title('Vibrational Energy Dissipation', fontsize=20)
         plt.legend(fontsize=10)
         plt.tight_layout()
-        plt.savefig(saveName)
+        plt.savefig(saveName, transparent=True)
         plt.close()
         return
 

@@ -1,15 +1,18 @@
 from ..config import *
+import matplotlib as mpl
 from ast      import literal_eval
 
 def radial_energy(csvDir, trajDir):
     def plot(df, title, labels, saveName):
+        mpl.rcParams['axes.prop_cycle'] = mpl.cycler(
+            color=[(1,0,1,1), (0.27,0.04,0.16,1), (0,0.75,0.75,1)])
         df.plot('t', ['r1', 'r2', 'r3'], label=labels)
         plt.title(title, fontsize=20)
         plt.xlabel('Time (ps)',   fontsize=15)
         plt.ylabel('Energy (eV)', fontsize=15)
         plt.legend(fontsize=10)
         plt.tight_layout()
-        plt.savefig(csvDir + saveName)
+        plt.savefig(csvDir + saveName, transparent=True)
         plt.close()
         return
 
@@ -27,7 +30,7 @@ def radial_energy(csvDir, trajDir):
             rList.append(r)
 
         return rList
-    
+
     def prep_data(prop):
         def get_r(low, high):
             r = sum(EList[(low < rList) & (rList <  high)])
@@ -51,7 +54,7 @@ def radial_energy(csvDir, trajDir):
             except:
                 print('Could not find CSV and traj files')
                 continue
-            
+
             if len(df) != len(traj):
                 print('DF length not equal Traj length')
                 continue
@@ -62,7 +65,7 @@ def radial_energy(csvDir, trajDir):
                 time  = df['Time'][i]
                 EList = np.array(literal_eval(df[prop][i]))
                 rList = np.array(get_rList(traj[i]))
-                
+
                 r1  = get_r(0.0,  4.5)
                 r2  = get_r(4.5,  8.0)
                 r3  = get_r(8.0, 11.0)
@@ -78,14 +81,14 @@ def radial_energy(csvDir, trajDir):
                     tmp['r3'][i] += r3
             N   += 1
             flag = False
-        
+
         tmp['r1'] = np.array(tmp['r1']) / N
         tmp['r2'] = np.array(tmp['r2']) / N
         tmp['r3'] = np.array(tmp['r3']) / N
-        
+
         df = pd.DataFrame(tmp)
         return df
-    
+
     labels = [r'$r_1$', r'$r_2$', r'$r_3$']
     df     = prep_data('All Vibra Energy')
     plot(df, 'Radial Vibrational Energy', labels, 'radVibra.png')
