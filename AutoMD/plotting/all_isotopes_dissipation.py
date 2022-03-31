@@ -43,14 +43,14 @@ def all_isotopes_dissipation(root):
             s       = shapes[dir]
             plt.plot(x,  y, label=l, color=c)
 
-        plt.xlabel('Time (ps)',   fontsize=15)
-        plt.ylabel('Energy (eV)', fontsize=15)
+        plt.xlabel('Time (ps)',   fontsize=18)
+        plt.ylabel('Energy (eV)', fontsize=18)
         plt.title('Vibrational Energy Dissipation', fontsize=20)
 
         h, l = plt.gca().get_legend_handles_labels()
         tmp  = sorted(zip(h,l), key=itemgetter(1))
         h, l = zip(*tmp)
-        plt.legend(h, l, fontsize=10)
+        plt.legend(h, l, fontsize=12)
 
         plt.tight_layout()
         plt.savefig(saveName, transparent=True)
