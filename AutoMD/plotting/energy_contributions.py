@@ -1,7 +1,7 @@
 from ..config import *
 import matplotlib as mpl
 
-def energy_contributions(csvDir, n=51):
+def energy_contributions(csvDir, n=51, noBkg=False):
     def get_avg():
         tmp = {}
         N   = 0
@@ -41,7 +41,7 @@ def energy_contributions(csvDir, n=51):
         plt.title(title, fontsize=18)
         plt.legend(fontsize=12)
         plt.tight_layout()
-        plt.savefig(saveName, transparent=True)
+        plt.savefig(saveName, transparent=noBkg)
         plt.close()
         return
 

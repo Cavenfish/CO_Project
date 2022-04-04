@@ -1,7 +1,7 @@
 from ..config import *
 from operator import itemgetter
 
-def all_isotopes_dissipation(root):
+def all_isotopes_dissipation(root, noBkg=False):
     def get_avg(csvDir):
         keys = ['Time', 'Total Energy', 'Sliced Energy']
         tmp  = {}
@@ -53,7 +53,7 @@ def all_isotopes_dissipation(root):
         plt.legend(h, l, fontsize=12)
 
         plt.tight_layout()
-        plt.savefig(saveName, transparent=True)
+        plt.savefig(saveName, transparent=noBkg)
         plt.close()
         return
 

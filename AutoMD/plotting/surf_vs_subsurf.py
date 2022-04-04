@@ -1,6 +1,6 @@
 from ..config import *
 
-def surf_vs_subsurf(root):
+def surf_vs_subsurf(root, noBkg=False):
     def get_avg(csvDir):
         keys = ['Time', 'Total Energy', 'Sliced Energy']
         tmp  = {}
@@ -43,7 +43,7 @@ def surf_vs_subsurf(root):
         plt.title('Vibrational Energy Dissipation', fontsize=20)
         plt.legend(fontsize=12)
         plt.tight_layout()
-        plt.savefig(saveName, transparent=True)
+        plt.savefig(saveName, transparent=noBkg)
         plt.close()
         return
 

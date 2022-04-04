@@ -1,6 +1,6 @@
 from ..config import *
 
-def spaghetti_plot(csvDir, n=51):
+def spaghetti_plot(csvDir, n=51, noBkg=False):
     def loop(property, ext):
         N     = len(os.listdir(csvDir))
         y_avg = 0
@@ -23,7 +23,7 @@ def spaghetti_plot(csvDir, n=51):
         plt.xlabel('Time (ps)',   fontsize=18)
         plt.title('Vibrational Energy Dissipation', fontsize=20)
         plt.legend(fontsize=12)
-        plt.savefig(csvDir + ext, transparent=True)
+        plt.savefig(csvDir + ext, transparent=noBkg)
         plt.close()
         return
 

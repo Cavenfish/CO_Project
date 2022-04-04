@@ -2,7 +2,7 @@ from ..config import *
 import matplotlib as mpl
 from ast      import literal_eval
 
-def radial_energy(csvDir, trajDir):
+def radial_energy(csvDir, trajDir, noBkg=False):
     def plot(df, title, labels, saveName):
         mpl.rcParams['axes.prop_cycle'] = mpl.cycler(
             color=[(1,0,1,1), (0.27,0.04,0.16,1), (0,0.75,0.75,1)])
@@ -12,7 +12,7 @@ def radial_energy(csvDir, trajDir):
         plt.ylabel('Energy (eV)', fontsize=18)
         plt.legend(fontsize=12)
         plt.tight_layout()
-        plt.savefig(csvDir + saveName, transparent=True)
+        plt.savefig(csvDir + saveName, transparent=noBkg)
         plt.close()
         return
 
