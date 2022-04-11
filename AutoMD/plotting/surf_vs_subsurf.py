@@ -22,6 +22,10 @@ def surf_vs_subsurf(root, noBkg=False):
         avg = pd.DataFrame(tmp)
         return avg
 
+    def get_dist_range(csvDir):
+        p1 = 
+        return
+
     def plot(ext, property):
         saveName = root + ext
         labels   = {'surf':'Surface', 'subsurf':'Sub-Surface'}
