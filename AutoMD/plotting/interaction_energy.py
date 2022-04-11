@@ -29,5 +29,6 @@ def interaction_energy(csvDir):
     plt.legend()
     plt.tight_layout()
     plt.savefig(csvDir + 'interaction_energy.png')
+    plt.close()
 
     return
