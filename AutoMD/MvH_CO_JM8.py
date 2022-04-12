@@ -476,12 +476,11 @@ class MvH_CO(Calculator):
             cms_weights = np.array( [self.faco, self.facc]*N )
         else:
             cms_weights = np.zeros_like(masses)
-			
-        for i in range(0, N, 2):
-            mC, mO           = masses[i:i+2]
-            MCO              = mC + mO
-            cms_weights[i]   = mC / MCO
-            cms_weights[i+1] = mO / MCO
+            for i in range(0, N, 2):
+                mC, mO           = masses[i:i+2]
+                MCO              = mC + mO
+                cms_weights[i]   = mC / MCO
+                cms_weights[i+1] = mO / MCO
 	
         return cms_weights
 
