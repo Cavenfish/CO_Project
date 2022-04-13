@@ -23,7 +23,7 @@ def surf_vs_subsurf(root, noBkg=False):
         return avg
 
     def get_dist_range(csvDir):
-        p1 = 
+         
         return
 
     def plot(ext, property):

@@ -216,7 +216,7 @@ def Morse_excitation(nu, n):
 
     return r_A
 
-def geo_opt(xyz):
+def geo_opt(xyz, fmax=0.0001):
     #Read in system and set van Hemert calculator
     system, calc = prep_system(xyz)
 
@@ -225,7 +225,7 @@ def geo_opt(xyz):
 
     #Run BFGS optimization of geometry
     opt   = BFGS(system, trajectory=traj)
-    opt.run(fmax=0.0001)
+    opt.run(fmax=fmax)
 
     #Make XYZ file of optimized system
     traj  = Trajectory(traj)
