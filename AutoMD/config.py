@@ -45,24 +45,29 @@ def rotat_excite(xyz, swap, E):
     momenta   = system.arrays['momenta'][swap]
     masses    = system.get_masses()[swap]
 
-    #Get CoM and V_CoM
-    vCoM  = (momenta[0] + momenta[1]) / sum(masses)
-    com   = CoM(pos, masses)
+    #Get variables for math
+    com = CoM(pos, masses)
+    mc  = masses[0]
+    mo  = masses[1]
+    tc  = pos[0] - com
+    rc  = np.sqrt(np.dot(tc,tc))
+    to  = pos[1] - com
+    ro  = np.sqrt(np.dot(to,to))
 
-    #Get r and m then use them to get I
-    r = pos[0] - com
-    m = masses[0]
-    I = m * np.dot(r, r)
+    #Get wo and wc
+    a   = (mo**2 * ro**2) / mc
+    wo  = np.sqrt( (2 * E) / (a + mo * ro**2) )
+    wc  = - (mo * wo * ro) / (mc * rc)
 
-    #Get omega then use it to get v
-    e = np.random.rand(3)
-    c = e / np.linalg.norm(e)
-    w = np.sqrt( (2 * E) / I ) * c
-    v = np.cross(w, r)
+    #Get random unitary vector and use it to make velocities
+    e  = np.random.rand(3)
+    c  = e / np.linalg.norm(e)
+    vc = np.cross(wc*c, tc)
+    vo = np.cross(wo*c, to)
 
     #Update the particles momentum
-    momenta[0] += m*v
-    momenta[1] -= m*v
+    momenta[0] += mc*vc
+    momenta[1] += mo*vo
 
     #Make excited molecule
     new_atoms = Atoms('CO', positions=pos, masses=masses, momenta=momenta)
