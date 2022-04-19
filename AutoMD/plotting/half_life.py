@@ -1,6 +1,6 @@
 from ..config import *
 
-def half_life(csvDir, n=51):
+def half_life(csvDir, n=51, eType='Vibrational'):
     def get_avg():
         keys = ['Time', 'Total Energy', 'Sliced Energy']
         tmp  = {}
@@ -59,7 +59,7 @@ def half_life(csvDir, n=51):
         plt.text(min(x), min(y), s)
         plt.xlabel('Time (ps)',   fontsize=15)
         plt.ylabel('Energy (eV)', fontsize=15)
-        plt.title('Vibrational Energy Dissipation', fontsize=20)
+        plt.title(eType + ' Energy Dissipation', fontsize=20)
         plt.legend(fontsize=10)
         plt.tight_layout()
         plt.savefig(saveName)

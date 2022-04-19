@@ -1,6 +1,6 @@
 from ..config import *
 
-def spaghetti_plot(csvDir, n=51, noBkg=False):
+def spaghetti_plot(csvDir, n=51, eType='Vibrational', noBkg=False):
     def loop(property, ext):
         N     = len(os.listdir(csvDir))
         y_avg = 0
@@ -21,7 +21,7 @@ def spaghetti_plot(csvDir, n=51, noBkg=False):
         plt.plot(x, y_avg, '--', label='Average', color='black', lw=2)
         plt.ylabel('Energy (eV)', fontsize=18)
         plt.xlabel('Time (ps)',   fontsize=18)
-        plt.title('Vibrational Energy Dissipation', fontsize=20)
+        plt.title(eType + ' Energy Dissipation', fontsize=20)
         plt.legend(fontsize=12)
         plt.savefig(csvDir + ext, transparent=noBkg)
         plt.close()

@@ -55,7 +55,9 @@ def rotat_excite(xyz, swap, E):
     I = m * np.dot(r, r)
 
     #Get omega then use it to get v
-    w = np.sqrt( (2 * E) / I ) * np.random.rand(3)
+    e = np.random.rand(3)
+    c = e / np.linalg.norm(e)
+    w = np.sqrt( (2 * E) / I ) * c
     v = np.cross(w, r)
 
     #Update the particles momentum
@@ -588,13 +590,26 @@ def radial_distribution(xyz):
     pos    = atoms.get_positions()
     masses = atoms.get_masses()
     eCoM   = CoM(pos[:2], masses[:2])
-    rList  = []
+    C      = pos[0]
+    O      = pos[1]
+    coco   = []
+    co     = []
+    cc     = []
+    oo     = []
     for i in range(1, len(masses)//2):
         a     = i*2
         b     = a+2
         cm    = CoM(pos[a:b], masses[a:b])
         diff  = cm - eCoM
         r     = np.sqrt(np.dot(diff,diff))
-        rList.append(r)
+        coco.append(r)
+        c     = pos[a]
+        o     = pos[a+1]
+        r     = np.sqrt(np.dot(C-o, C-o))
+        co.append(r)
+        r     = np.sqrt(np.dot(C-c, C-c))
+        cc.append(r)
+        r     = np.sqrt(np.dot(O-o, O-o))
+        oo.append(r)
 
-    return rList
+    return coco,co,cc,oo

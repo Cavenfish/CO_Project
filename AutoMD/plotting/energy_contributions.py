@@ -26,13 +26,20 @@ def energy_contributions(csvDir, n=51, noBkg=False):
 
     def plot(avg, ext, label, property, title, all=[]):
         mpl.rcParams['axes.prop_cycle'] = mpl.cycler(
-            color=[(1,0,1,1), (0.27,0.04,0.16,1), (0,0.75,0.75,1)])
-        saveName = csvDir + ext
-        x        = avg['Time']
-        y        = savgol_filter(avg[property], n, 2)
+            color = [(1,0,1,1), (0.27,0.04,0.16,1), (0,0.75,0.75,1)])
+        saveName  = csvDir + ext
+        x         = avg['Time']
+        if n == 0:
+            y     = avg[property]
+        else:
+            y     = savgol_filter(avg[property], n, 2)
         if all:
-            y2   = savgol_filter(avg[all[0]], n, 2)
-            y3   = savgol_filter(avg[all[2]], n, 2)
+            if n == 0:
+                y2 = avg[all[0]]
+                y3 = avg[all[2]]
+            else:
+                y2 = savgol_filter(avg[all[0]], n, 2)
+                y3 = savgol_filter(avg[all[2]], n, 2)
             plt.plot(x, y2, label=all[1])
             plt.plot(x, y3, label=all[3])
         plt.plot(x,  y, label=label)
