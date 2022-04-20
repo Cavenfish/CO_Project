@@ -67,7 +67,7 @@ def rotat_excite(xyz, swap, E):
 
     #Update the particles momentum
     momenta[0] += mc*vc
-    momenta[1] += mo*vo
+    momenta[1] -= mo*vo
 
     #Make excited molecule
     new_atoms = Atoms('CO', positions=pos, masses=masses, momenta=momenta)
@@ -516,13 +516,12 @@ def make_NVE_output(trajFile, csvFile, ts):
 
 def calc_Evib(pos, masses, velocs):
     #Calculate kinetic energy terms
-    mu    = (masses[0] * masses[1]) / sum(masses)
     d     = pos[0] - pos[1]
     ed    = d / np.linalg.norm(d)
     vd0   = np.dot(ed, velocs[0])
     vd1   = np.dot(ed, velocs[1])
-    a     = 0.5 * masses[0] * np.dot(vd0, vd0)
-    b     = 0.5 * masses[1] * np.dot(vd1, vd1)
+    a     = 0.5 * masses[0] * vd0**2
+    b     = 0.5 * masses[1] * vd1**2
 
     #Sum it all up
     E_vib = a + b 

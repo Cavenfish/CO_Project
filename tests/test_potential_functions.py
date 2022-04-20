@@ -2,7 +2,7 @@ import pytest, sys
 import numpy as np
 
 def test_coulomb():
-    sys.path.append('../sourcecode/')
+    sys.path.append('../AutoMD/')
     from MvH_CO_JM8 import V_coul
 
     E, F       = V_coul([1,0,0], 1)
@@ -22,7 +22,7 @@ def test_coulomb():
     return
 
 def test_exchange():
-    sys.path.append('../sourcecode/')
+    sys.path.append('../AutoMD/')
     from MvH_CO_JM8 import V_exch
     import numpy as np
 
