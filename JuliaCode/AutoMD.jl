@@ -22,7 +22,7 @@ function read_ase_xyz(xyz)
     s     = sys[i][1]
     q     = Q[s]
 
-    if occursin("masses", hed)  
+    if occursin("masses", hed)
       mas = props[4]
       vel = SVector{3}(props[5:7] ./ mas)
     else
@@ -33,24 +33,24 @@ function read_ase_xyz(xyz)
     particle = ChargedParticle(pos, vel, mas, q, s)
     push!(set, particle)
   end #for loop
-  
+
   return set
 end #read_ase_xyz
 
 
-function write_xyz_traj(fileName::String, sr)
+function write_xyz_traj(fileName::String, sr, dt)
   bodies = sr.simulation.system.bodies
   n      = length(bodies)
   i      = 0
   f      = open(fileName, "w")
 
-  for t in sr.solution.t
+  for t in sr.solution.t[1:dt:end]
     cc = get_position(sr, t)
     i += 1
-    
+
     println(f, lpad(n, 9))
     println(f, "i=$i, time=$t")
-    
+
     for j ∈ 1:n
 
       s = bodies[j].s
@@ -60,7 +60,7 @@ function write_xyz_traj(fileName::String, sr)
 
       println(f, "$s   $x   $y   $z")
     end # molecule for loop
-    
+
   end # time for loop
   close(f)
 end #write_xyz_traj
