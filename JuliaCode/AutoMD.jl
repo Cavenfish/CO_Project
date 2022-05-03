@@ -2,6 +2,12 @@ module AutoMD
 
 using StaticArrays
 using NBodySimulator
+using Unitful
+using UnitfulAtomic
+
+Unitful.register(@__MODULE__)
+
+@unit Ang "Ang" Angstrom 0.1u"nm" true
 
 export read_ase_xyz
 export write_xyz_traj
@@ -12,22 +18,22 @@ function read_ase_xyz(xyz)
   hed = sys[2]
   sys = split.(sys[3:end], " ")
   sys = deleteat!.(sys, findall.(e -> e == "", sys))
-  amu = Dict("C" => 12.011, "O" => 15.999)
-  Q   = Dict("C" => -1.786, "O" => -2.332)
+  amu = Dict("C" => 12.011u"u", "O" => 15.999u"u")
+  Q   = Dict("C" => -1.786u"e_au", "O" => -2.332u"e_au")
   set = ChargedParticle[]
 
   for i in range(1,N)
     props = parse.(Float64, sys[i][2:end])
-    pos   = SVector{3}(props[1:3])
+    pos   = SVector{3}(props[1:3])u"Ang"
     s     = sys[i][1]
     q     = Q[s]
 
     if occursin("masses", hed)
       mas = props[4]
-      vel = SVector{3}(props[5:7] ./ mas)
+      vel = SVector{3}(props[5:7]u"(eV*u)^0.5" ./ mas)
     else
       mas = amu[s]
-      vel = SVector{3}(props[4:6] ./ mas)
+      vel = SVector{3}(props[4:6]u"(eV*u)^0.5" ./ mas)
     end #if-else
 
     particle = ChargedParticle(pos, vel, mas, q, s)
