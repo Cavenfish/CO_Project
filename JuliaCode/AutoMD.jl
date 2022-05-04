@@ -1,13 +1,12 @@
 module AutoMD
 
+include("CustomBodies.jl")
+
+using .CustomBodies
 using StaticArrays
 using NBodySimulator
 using Unitful
 using UnitfulAtomic
-
-Unitful.register(@__MODULE__)
-
-@unit Ang "Ang" Angstrom 0.1u"nm" true
 
 export read_ase_xyz
 export write_xyz_traj
@@ -20,7 +19,7 @@ function read_ase_xyz(xyz)
   sys = deleteat!.(sys, findall.(e -> e == "", sys))
   amu = Dict("C" => 12.011u"u", "O" => 15.999u"u")
   Q   = Dict("C" => -1.786u"e_au", "O" => -2.332u"e_au")
-  set = ChargedParticle[]
+  set = Nucleus[]
 
   for i in range(1,N)
     props = parse.(Float64, sys[i][2:end])
@@ -36,7 +35,7 @@ function read_ase_xyz(xyz)
       vel = SVector{3}(props[4:6]u"(eV*u)^0.5" ./ mas)
     end #if-else
 
-    particle = ChargedParticle(pos, vel, mas, q, s)
+    particle = Nucleus(pos, vel, mas, q, s)
     push!(set, particle)
   end #for loop
 
