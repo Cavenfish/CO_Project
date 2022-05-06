@@ -1,36 +1,35 @@
 module CustomSimulation
 
-using NBodySimulator
 using Unitful
+using UnitfulAtomic
 
-import NBodySimulator.NBodySimulation
-import NBodySimulator.NBodySystem
-import NBodySimulator.BoundaryConditions
-import NBodySimulator.PotentialNBodySystem
-import NBodySimulator.run_simulation
-import NBodySimulator.calculate_simulation
+export Vacuo
+export MDSimulation
 
-export COCOSimulation
+abstract type Simulation
+end
 
+abstract type SimulationCell
+end
 
-struct COCOSimulation{sType <: NBodySystem,
-		      bType <: BoundaryConditions,
-		      tType <: Unitful.Time}
+struct InfiniteCell{} <: SimulationCell
+  bounds::SVector{6, Real}
+end
+
+Vacuo() = InfiniteCell(SVector{-Inf, Inf,-Inf, Inf,-Inf, Inf})
+
+struct MDSimulation{sType <: System,
+		    bType <: SimulationCell,
+		    tType <: Unitful.Time} <: Simulation
 
   system::sType
   tspan::Tuple{tType, tType}
   boundary_conditions::bType
 end
 
-
-function NBodySimulation(system::PotentialNBodySystem, tspan::Tuple{tType,tType}) where {tType <: Unitful.Time}
-  COCOSimulation(system, tspan, InfiniteBox())
+function MDSimulation(sys::System, tspan::Tuple{tType, tType}, 
+		      cell::SimulationCell) where {tType <: Unitful.Time}
+  MDSimulation(sys, tspan, cell)
 end
-
-function run_simulation(s::COCOSimulation, args...; kwargs...)
-  calculate_simulation(s, args...; kwargs...)
-end
-
-function
 
 end
