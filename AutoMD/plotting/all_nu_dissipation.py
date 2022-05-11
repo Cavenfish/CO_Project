@@ -50,18 +50,28 @@ def all_nu_dissipation(root, noBkg=False):
                     '4': r'$\nu$ = 4', '5': r'$\nu$ = 5', '6': r'$\nu$ = 6',
                 'nu1': r'$\nu$ = 1', 'nu2': r'$\nu$ = 2', 'nu3': r'$\nu$ = 3',
                 'nu4': r'$\nu$ = 4', 'nu5': r'$\nu$ = 5', 'nu6': r'$\nu$ = 6'}
-        #colors   = {'surf':(1,0,1,1), 'subsurf':(0.27,0.04,0.16,1)}
+        colors   = {'surf':(1,0,1,1), 'subsurf':(0.27,0.04,0.16,1)}
         for dir in os.listdir(root):
             if not os.path.isdir(root + dir):
                 continue
 
-            csvDir  = root + dir + '/'
-            avg     = get_avg(csvDir)
-            x       = avg['Time']
-            y       = avg[property]
-            l       = labels[dir]
-            #c       = colors[dir]
-            plt.plot(x,  y, label=l)#, color=c)
+            if dir in colors:
+                subRoot = root + dir
+                for dir2 in os.listdir(subRoot):
+                    csvDir  = subRoot + dir2 + '/'
+                    avg     = get_avg(csvDir)
+                    x       = avg['Time']
+                    y       = avg[property]
+                    l       = labels[dir2]
+                    c       = colors[dir]
+                    plt.plot(x,  y, label=l, color=c)
+            else:
+                csvDir  = root + dir + '/'
+                avg     = get_avg(csvDir)
+                x       = avg['Time']
+                y       = avg[property]
+                l       = labels[dir]
+                plt.plot(x,  y, label=l)
 
         plt.xlabel('Time (ps)',   fontsize=18)
         plt.ylabel('Energy (eV)', fontsize=18)

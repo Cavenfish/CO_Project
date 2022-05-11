@@ -12,6 +12,9 @@ from .all_isotopes_dissipation import all_isotopes_dissipation
 from .surf_vs_subsurf          import surf_vs_subsurf
 from .all_nu_dissipation       import all_nu_dissipation
 from .size_comparison          import size_comparison
+from .rdf                      import rdf
+from .rdf                      import rdf_of_traj
+from .rdf                      import rdf_of_array
 
 __functions__ = [spaghetti_plot,
                  energy_contributions,
@@ -21,4 +24,5 @@ __functions__ = [spaghetti_plot,
                  interaction_energy,
                  all_isotopes_dissipation,
                  all_nu_dissipation,
-                 size_comparison]
+                 size_comparison,
+                 rdf]
