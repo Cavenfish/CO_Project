@@ -12,9 +12,9 @@ import NBodySimulator.get_accelerating_function
 export DispersionParameters
 
 struct DispersionParameters <: PotentialParameters
-  Ccc::typeof(1.0u"eV*Ang^6")
-  Coo::typeof(1.0u"eV*Ang^6")
-  Cco::typeof(1.0u"eV*Ang^6")
+  Ccc::Float64
+  Coo::Float64
+  Cco::Float64
 end
 
 function get_accelerating_function(p::DispersionParameters, sim::NBodySimulation)
@@ -45,28 +45,19 @@ function get_accelerating_function(p::DispersionParameters, sim::NBodySimulation
     improve =#
 
     for j in 1:N
-      if (i == j)
+	    
+      if (i == j) || (j == bdy[i].b)
         continue
-      end
-
-      if (i % 2 == 0)
-        if (i - 1 == j)
-          continue
-        end
-      else
-        if (i + 1 == j)
-          continue
-        end
       end
 
       rj   = @SVector [u[1, j], u[2, j], u[3, j]]
 
       if     (bdy[i].s == bdy[j].s == 'C')
-        F += V_disp(rj - ri, p.Ccc)
+        F -= V_disp(rj - ri, p.Ccc)
       elseif (bdy[i].s == bdy[j].s == 'O')
-        F += V_disp(rj - ri, p.Coo)
+        F -= V_disp(rj - ri, p.Coo)
       else
-        F += V_disp(rj - ri, p.Cco)
+        F -= V_disp(rj - ri, p.Cco)
       end
     end
 

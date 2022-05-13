@@ -3,6 +3,8 @@ module CustomBodies
 using Unitful
 using UnitfulAtomic
 using StaticArrays
+using DiffEqBase
+using NBodySimulator
 
 Unitful.register(@__MODULE__)
 
@@ -10,23 +12,22 @@ Unitful.register(@__MODULE__)
 
 export Atom
 
-abstract type Particle 
-end
-
 DiffEqBase.@def pos_vel begin
   r::SVector{3,rType}
   v::SVector{3,vType}
 end
 
-struct Atom{rType <: typeof(1.0u"Ang"),
-	    vType <: typeof(1.0u"(eV/u)^0.5"),
-	    mType <: typeof(1.0u"u"),
-	    qType <: typeof(1.0u"e_au"),
-	    sType <: AbstractString} <: Particle
+struct Atom{rType <: Float64,
+	    vType <: Float64,
+	    mType <: Float64,
+	    qType <: Float64,
+	    bType <: UInt64,
+	    sType <: AbstractString} <: NBodySimulator.Body
 
   @pos_vel
   m::mType
   q::qType
+  b::bType
   s::sType
 end
 

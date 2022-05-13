@@ -13,12 +13,12 @@ import NBodySimulator.get_accelerating_function
 export ExchangeParameters
 
 struct ExchangeParameters <: PotentialParameters
-  Acc::typeof(1.0u"eV")
-  Aoo::typeof(1.0u"eV")
-  Aco::typeof(1.0u"eV")
-  Bcc::typeof(1.0u"Ang^-1")
-  Boo::typeof(1.0u"Ang^-1")
-  Bco::typeof(1.0u"Ang^-1")
+  Acc::Float64
+  Aoo::Float64
+  Aco::Float64
+  Bcc::Float64
+  Boo::Float64
+  Bco::Float64
 end
 
 function get_accelerating_function(p::ExchangeParameters, sim::NBodySimulation)
@@ -49,28 +49,19 @@ function get_accelerating_function(p::ExchangeParameters, sim::NBodySimulation)
     improve =#
 
     for j in 1:N
-      if (i ==  j)
+      
+      if (i ==  j) || (j == bdy[i].b)
         continue
-      end
-
-      if (i % 2 == 0)
-        if (i - 1 == j)
-         continue
-        end
-      else
-        if (i + 1 == j)
-          continue
-        end
       end
 
       rj = @SVector [u[1,j], u[2,j], u[3,j]]
 
       if     (bdy[i].s == bdy[j].s == 'C')
-        F += V_exch(rj - ri, p.Acc, p.Bcc)
+        F -= V_exch(rj - ri, p.Acc, p.Bcc)
       elseif (bdy[i].s == bdy[j].s == 'O')
-        F += V_exch(rj - ri, p.Aoo, p.Boo)
+        F -= V_exch(rj - ri, p.Aoo, p.Boo)
       else
-        F += V_exch(rj - ri, p.Aco, p.Bco)
+        F -= V_exch(rj - ri, p.Aco, p.Bco)
       end
     end
 

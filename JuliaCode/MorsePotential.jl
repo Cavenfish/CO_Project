@@ -12,9 +12,9 @@ import NBodySimulator.get_accelerating_function
 export MorseParameters
 
 struct MorseParameters <: PotentialParameters
-   ϵ::typeof(1.0u"eV")
+   ϵ::Float64
   ρ0::Float64
-  r0::typeof(1.0u"Ang")
+  r0::Float64
 end
 
 
@@ -31,11 +31,8 @@ function get_accelerating_function(p::MorseParameters, sim::NBodySimulation)
 
   (dv, u, v, t, i) -> begin
 
-    if ( i % 2 == 0)
-      rj   = @SVector [u[1, i-1], u[2, i-1], u[3, i-1]]
-    else
-      rj   = @SVector [u[1, i+1], u[2, i+1], u[3, i+1]]
-    end
+    j    = bdy[i].b
+    rj   = @SVector [u[1, j], u[2, j], u[3, j]]
 
     ri   = @SVector [u[1, i], u[2, i], u[3, i]]
     diff = rj .- ri
@@ -45,7 +42,7 @@ function get_accelerating_function(p::MorseParameters, sim::NBodySimulation)
     r    = √(diff'diff)
     expf = exp(p.ρ0 * (1.0 - r / p.r0))
     F   -= preF * expf * (expf - 1) * diff / r
-
+    
     dv  .= F / m[i]
   end #Morse acceleration
 end

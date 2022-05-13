@@ -17,25 +17,31 @@ function read_ase_xyz(xyz)
   hed = sys[2]
   sys = split.(sys[3:end], " ")
   sys = deleteat!.(sys, findall.(e -> e == "", sys))
-  amu = Dict("C" => 12.011u"u", "O" => 15.999u"u")
-  Q   = Dict("C" => -1.786u"e_au", "O" => -2.332u"e_au")
-  set = Nucleus[]
+  amu = Dict("C" => 12.011, "O" => 15.999)
+  Q   = Dict("C" => -1.786, "O" => -2.332)
+  set = Atom[]
 
   for i in range(1,N)
     props = parse.(Float64, sys[i][2:end])
-    pos   = SVector{3}(props[1:3])u"Ang"
+    pos   = SVector{3}(props[1:3])
     s     = sys[i][1]
     q     = Q[s]
 
     if occursin("masses", hed)
       mas = props[4]
-      vel = SVector{3}(props[5:7]u"(eV*u)^0.5" ./ mas)
+      vel = SVector{3}(props[5:7] ./ mas)
     else
       mas = amu[s]
-      vel = SVector{3}(props[4:6]u"(eV*u)^0.5" ./ mas)
+      vel = SVector{3}(props[4:6] ./ mas)
     end #if-else
+    
+    if (i % 2 == 0)
+      b = UInt(i - 1)
+    else
+      b = UInt(i + 1)
+    end
 
-    particle = Nucleus(pos, vel, mas, q, s)
+    particle = Atom(pos, vel, mas, q, b, s)
     push!(set, particle)
   end #for loop
 

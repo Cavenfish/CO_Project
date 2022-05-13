@@ -14,7 +14,7 @@ export CoulombParameters
 struct CoulombParameters <: PotentialParameters
   αc::Float64
   αo::Float64
-  r0::typeof(1.0u"Ang")
+  r0::Float64
   FQ::Bool
   FX::Bool
 end
@@ -35,6 +35,10 @@ function get_accelerating_function(p::CoulombParameters, sim::NBodySimulation)
   bdy = sim.system.bodies
   m   = get_masses(sim.system)
   N   = length(bdy)
+  mC  = m[1]
+  mO  = m[2]
+  wC  = mC / (mC + mO)
+  wO  = mO / (mC + mO)
 
   (dv, u, v, t, i) -> begin
     F  = @SVector [0.0, 0.0, 0.0]
@@ -47,22 +51,13 @@ function get_accelerating_function(p::CoulombParameters, sim::NBodySimulation)
     improve =#
 
     for j in 1:N
-      if (i ==  j)
+	
+      if (i ==  j) || (j == bdy[i].b)
         continue
       end
 
-      if (i % 2 == 0)
-        if (i - 1 == j)
-          continue
-        end
-      else
-        if (i + 1 == j)
-          continue
-        end
-      end
-
       rj = @SVector [u[1,j], u[2,j], u[3,j]]
-      F -= V_coul(rj - ri, bdy[i].q * bdy[j].q)
+      F -= V_coul(rj .- ri, bdy[i].q * bdy[j].q)
     end
 
     #=
