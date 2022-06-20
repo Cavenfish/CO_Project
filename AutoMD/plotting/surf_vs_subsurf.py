@@ -45,34 +45,39 @@ def surf_vs_subsurf(root, noBkg=False):
         return std
 
     def plot(ext, property):
-        saveName = root + ext
         labels   = {'surf':'Surface', 'subsurf':'Sub-Surface'}
         colors   = {'surf':(1,0,1,1), 'subsurf':(0.27,0.04,0.16,1)}
-        for dir in os.listdir(root):
-            if not os.path.isdir(root + dir):
-                continue
+        isotope  = {'co':'CO', '13co':r'$^{13}$CO', 
+                    '13c18o':r'$^{13}$C$^{18}$O', 'c18o':r'C$^{18}$O'}
+        for iso in isotope.keys():
+            for loc in labels.keys():
+                csvDir  = root + loc + '/' + iso + '/nu1/'
+                if not os.path.isdir(csvDir):
+                    continue
 
-            csvDir  = root + dir + '/'
-            avg     = get_avg(csvDir)
-            std     = get_std(csvDir, avg)
-            x       = avg['Time']
-            y       = avg[property]
-            yerr    = std[property]
-            l       = labels[dir]
-            c       = colors[dir]
-            mks, cs, bs = plt.errorbar(x,  y, yerr, label=l, color=c,
-                                       elinewidth=0.5, capsize=0.75)
+                avg     = get_avg(csvDir)
+                std     = get_std(csvDir, avg)
+                x       = avg['Time']
+                y       = avg[property]
+                yerr    = std[property]
+                l       = labels[loc]
+                c       = colors[loc]
+                mks, cs, bs = plt.errorbar(x,  y, yerr, label=l, color=c,
+                                           elinewidth=0.5, capsize=0.75)
 
-            [bar.set_alpha(0.05) for bar in bs]
-            [cap.set_alpha(0.05) for cap in cs]
-
-        plt.xlabel('Time (ps)',   fontsize=18)
-        plt.ylabel('Energy (eV)', fontsize=18)
-        plt.title('Vibrational Energy Dissipation', fontsize=20)
-        plt.legend(fontsize=12)
-        plt.tight_layout()
-        plt.savefig(saveName, transparent=noBkg)
-        plt.close()
+                [bar.set_alpha(0.05) for bar in bs]
+                [cap.set_alpha(0.05) for cap in cs]
+            
+            title    = isotope[iso] + ' Vibrational Energy Dissipation'
+            saveName = root + iso + '_' + ext
+            
+            plt.xlabel('Time (ps)',   fontsize=18)
+            plt.ylabel('Energy (eV)', fontsize=18)
+            plt.title(title, fontsize=20)
+            plt.legend(fontsize=12)
+            plt.tight_layout()
+            plt.savefig(saveName, transparent=noBkg)
+            plt.close()
         return
 
     plot('surfVsSub.png', 'Total Energy')
