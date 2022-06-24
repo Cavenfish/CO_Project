@@ -55,19 +55,20 @@ def all_isotopes_dissipation(root, noBkg=False):
             if not os.path.isdir(root + dir):
                 continue
 
-            csvDir  = root + dir + '/'
+            csvDir  = root + dir + '/nu1/'
             avg     = get_avg(csvDir)
-            std     = get_std(csvDir, avg)
+            #std     = get_std(csvDir, avg)
             x       = avg['Time']
             y       = avg[property]
-            yerr    = std[property]
+            #yerr    = std[property]
             l       = labels[dir]
             c       = colors[dir]
-            mks, cs, bs = plt.errorbar(x,  y, yerr, label=l, color=c,
-                                       elinewidth=0.5, capsize=0.75)
+            plt.plot(x, y, label=l, color=c)
+            #mks, cs, bs = plt.errorbar(x,  y, yerr, label=l, color=c,
+            #                           elinewidth=0.5, capsize=0.75)
 
-            [bar.set_alpha(0.05) for bar in bs]
-            [cap.set_alpha(0.05) for cap in cs]
+            #[bar.set_alpha(0.05) for bar in bs]
+            #[cap.set_alpha(0.05) for cap in cs]
 
         plt.xlabel('Time (ps)',   fontsize=18)
         plt.ylabel('Energy (eV)', fontsize=18)

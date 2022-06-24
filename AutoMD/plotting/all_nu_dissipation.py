@@ -56,15 +56,20 @@ def all_nu_dissipation(root, noBkg=False):
                 continue
 
             if dir in colors:
-                subRoot = root + dir
+                labels  = {'surf': 'Surface', 'subsurf': 'Subsurface'}
+                subRoot = root + dir + '/co/'
                 for dir2 in os.listdir(subRoot):
                     csvDir  = subRoot + dir2 + '/'
+                    if not os.path.isdir(csvDir):
+                        continue
                     avg     = get_avg(csvDir)
                     x       = avg['Time']
                     y       = avg[property]
-                    l       = labels[dir2]
+                    l       = labels[dir]
                     c       = colors[dir]
-                    plt.plot(x,  y, label=l, color=c)
+                    _, labs = plt.gca().get_legend_handles_labels()
+                    plt.plot(x,  y, color=c,
+                             label=l if l not in labs else "")
             else:
                 csvDir  = root + dir + '/'
                 avg     = get_avg(csvDir)
@@ -76,7 +81,7 @@ def all_nu_dissipation(root, noBkg=False):
         plt.xlabel('Time (ps)',   fontsize=18)
         plt.ylabel('Energy (eV)', fontsize=18)
         plt.title('Vibrational Energy Dissipation', fontsize=20)
-        #plt.legend(fontsize=12)
+        plt.legend(fontsize=12)
         #plt.gca().get_legend().remove()
         plt.tight_layout()
         plt.savefig(saveName, transparent=noBkg)
