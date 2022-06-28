@@ -1,6 +1,6 @@
 from ..config import *
 
-def surf_vs_subsurf(root, noBkg=False):
+def surf_vs_subsurf(root, noBkg=False, errBar=False):
     def get_avg(csvDir):
         keys = ['Time', 'Total Energy', 'Sliced Energy']
         tmp  = {}
@@ -47,7 +47,7 @@ def surf_vs_subsurf(root, noBkg=False):
     def plot(ext, property):
         labels   = {'surf':'Surface', 'subsurf':'Sub-Surface'}
         colors   = {'surf':(1,0,1,1), 'subsurf':(0.27,0.04,0.16,1)}
-        isotope  = {'co':'CO', '13co':r'$^{13}$CO', 
+        isotope  = {'co':'CO', '13co':r'$^{13}$CO',
                     '13c18o':r'$^{13}$C$^{18}$O', 'c18o':r'C$^{18}$O'}
         for iso in isotope.keys():
             for loc in labels.keys():
@@ -59,18 +59,20 @@ def surf_vs_subsurf(root, noBkg=False):
                 std     = get_std(csvDir, avg)
                 x       = avg['Time']
                 y       = avg[property]
-                yerr    = std[property]
                 l       = labels[loc]
                 c       = colors[loc]
-                mks, cs, bs = plt.errorbar(x,  y, yerr, label=l, color=c,
+                if errBar:
+                    yerr    = std[property]
+                    mks, cs, bs = plt.errorbar(x,  y, yerr, label=l, color=c,
                                            elinewidth=0.5, capsize=0.75)
+                    [bar.set_alpha(0.05) for bar in bs]
+                    [cap.set_alpha(0.05) for cap in cs]
+                else:
+                    plt.plot(x, y, label=l, color=c)
 
-                [bar.set_alpha(0.05) for bar in bs]
-                [cap.set_alpha(0.05) for cap in cs]
-            
             title    = isotope[iso] + ' Vibrational Energy Dissipation'
             saveName = root + iso + '_' + ext
-            
+
             plt.xlabel('Time (ps)',   fontsize=18)
             plt.ylabel('Energy (eV)', fontsize=18)
             plt.title(title, fontsize=20)
