@@ -15,6 +15,7 @@ from .size_comparison          import size_comparison
 from .rdf                      import rdf
 from .rdf                      import rdf_of_traj
 from .rdf                      import rdf_of_array
+from .neighbor_energy          import neighbor_energy
 
 __functions__ = [spaghetti_plot,
                  energy_contributions,

@@ -4,13 +4,13 @@ from ast      import literal_eval
 
 def neighbor_energy(csvDir, trajDir, noBkg=False):
     def plot(df, title, labels, saveName):
-        mpl.rcParams['axes.prop_cycle'] = mpl.cycler(
-            color=[(1,0,1,1), (0.27,0.04,0.16,1), (0,0.75,0.75,1)])
+        #mpl.rcParams['axes.prop_cycle'] = mpl.cycler(
+        #    color=[(1,0,1,1), (0.27,0.04,0.16,1), (0,0.75,0.75,1)])
         df.plot('t', df.keys()[1:])
         plt.title(title, fontsize=20)
         plt.xlabel('Time (ps)',   fontsize=18)
         plt.ylabel('Energy (eV)', fontsize=18)
-        plt.legend(fontsize=12)
+        #plt.legend(fontsize=12)
         plt.tight_layout()
         plt.savefig(csvDir + saveName, transparent=noBkg)
         plt.close()
@@ -42,7 +42,7 @@ def neighbor_energy(csvDir, trajDir, noBkg=False):
         for fname in os.listdir(csvDir):
             if '.csv' not in fname:
                 continue
-
+            N+=1
             try:
                 df   = pd.read_csv(csvDir + fname)
                 traj = Trajectory(trajDir + fname.replace('.csv', '.traj'))
@@ -61,9 +61,7 @@ def neighbor_energy(csvDir, trajDir, noBkg=False):
                 EList = np.array(literal_eval(df[prop][i]))
                 rList = np.array(get_rList(traj[i]))
 
-                r1  = get_r(0.0,  6.5)
-                r2  = get_r(4.5,  8.0)
-                r3  = get_r(8.0, 11.0)
+                r1  = get_r(0.0,  4.5)
 
                 tmp['t' ].append(time)
                 k = 0
@@ -82,8 +80,6 @@ def neighbor_energy(csvDir, trajDir, noBkg=False):
                                 k -= 1
                                 continue
                 flag = False
-                #tmp['r2'].append(r2)
-                #tmp['r3'].append(r3)
 
             del_this = []
             for i in tmp:
@@ -92,8 +88,7 @@ def neighbor_energy(csvDir, trajDir, noBkg=False):
             for j in del_this:
                 del(tmp[j])
             df = pd.DataFrame(tmp)
-            print(df)
-            plot(df, title, labels, saveName + str(i) + '.png')
+            plot(df, title, labels, saveName + str(N) + '.png')
         return df
 
     labels = [r'$r_1$']

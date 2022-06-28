@@ -88,7 +88,7 @@ def trans_excite(xyz, swap, E):
     pos       = system.get_positions()[swap]
     momenta   = system.arrays['momenta'][swap]
     masses    = system.get_masses()[swap]
-    
+
     #Get scalar value of velocity from E
     mu = (masses[0] * masses[1])/sum(masses)
     nu = np.sqrt( (2 * E)/(mu) )
@@ -98,8 +98,8 @@ def trans_excite(xyz, swap, E):
     e = r / np.linalg.norm(r)
 
     #Make velocity vector
-    v = nu * e 
-    
+    v = nu * e
+
     #Make new momenta
     p0 = momenta[0] + masses[0] * v
     p1 = momenta[1] + masses[1] * v
@@ -121,7 +121,7 @@ def Morse_energy(nu, n):
     #Constants and unit conversions
     D_e   = 11.2301  #eV
     nu    = nu / 1e4 #um^-1
-    hc    = 1.239841 #eV um 
+    hc    = 1.239841 #eV um
     tmp   = (n + 1/2) * hc * nu
     V_mor = tmp - ( (tmp**2) / (4 * D_e) )
     return V_mor
@@ -205,7 +205,7 @@ def Morse_excitation(nu, n):
     beta  =  2.627   #Angstrom^-1
     r_e   =  1.1282  #Angstrom
     nu    = nu / 1e4   #um^-1
-    hc    = 1.239841   #eV um 
+    hc    = 1.239841   #eV um
     tmp   = (n + 1/2) * hc * nu
     V_mor = tmp - ( (tmp**2) / (4 * D_e) )
 
@@ -464,7 +464,7 @@ def make_NVT_output(logFile, csvFile):
     #If not, the call can ignore the return
     return df
 
-def make_NVE_output(trajFile, csvFile, ts):
+def make_NVE_output(trajFile, csvFile, ts, mask=False):
     #Open trajectory
     traj = Trajectory(trajFile)
 
@@ -487,6 +487,9 @@ def make_NVE_output(trajFile, csvFile, ts):
     #Loop through trajectory, writting to output file
     for i in range(len(traj)):
         system = traj[i]
+        if mask:
+            rList  = np.array(get_rList(system))
+            system = system[(mask[0] <= rList) & (rList <= mask[1])]
         calc   = system.calc
         data   = track_dissipation(system, calc)
         temp['Time'].append(i * ts)
@@ -524,7 +527,7 @@ def calc_Evib(pos, masses, velocs):
     b     = 0.5 * masses[1] * vd1**2
 
     #Sum it all up
-    E_vib = a + b 
+    E_vib = a + b
     return E_vib
 
 def calc_Erot(pos, masses, velocs):
@@ -568,8 +571,21 @@ def get_spherical_coords(xyz):
 
     return coords
 
-def label_molecules(xyz):
-    return labels
+def get_rList(atoms):
+    pos    = atoms.get_positions()
+    masses = atoms.get_masses()
+    eCoM   = CoM(pos[:2], masses[:2])
+    rList  = []
+    for i in range(0, len(masses)//2):
+        a     = i*2
+        b     = a+2
+        cm    = CoM(pos[a:b], masses[a:b])
+        diff  = cm - eCoM
+        r     = np.sqrt(np.dot(diff,diff))
+        rList.append(r)
+        rList.append(r)
+
+    return rList
 
 def track_E_vs_r(EList, pos, masses):
     eCoM   = CoM(pos[:2], masses[:2])
