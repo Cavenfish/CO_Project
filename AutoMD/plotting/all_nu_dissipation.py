@@ -53,13 +53,14 @@ def all_nu_dissipation(root, noBkg=False):
         colors   = {'surf':(1,0,1,1), 'subsurf':(0.27,0.04,0.16,1)}
         isotope  = {'co':'CO', '13co':r'$^{13}$CO',
                     '13c18o':r'$^{13}$C$^{18}$O', 'c18o':r'C$^{18}$O'}
-        for dir in os.listdir(root):
-            if not os.path.isdir(root + dir):
-                continue
 
-            if dir in colors:
-                labels  = {'surf': 'Surface', 'subsurf': 'Subsurface'}
-                for iso in isotope.keys():
+        for iso in isotope.keys():
+            for dir in os.listdir(root):
+                if not os.path.isdir(root + dir):
+                    continue
+
+                if dir in colors:
+                    labels  = {'surf': 'Surface', 'subsurf': 'Subsurface'}
                     saveName = root + iso + '_' + ext
                     subRoot = root + dir + '/' + iso + '/'
                     for dir2 in os.listdir(subRoot):
@@ -74,31 +75,22 @@ def all_nu_dissipation(root, noBkg=False):
                         _, labs = plt.gca().get_legend_handles_labels()
                         plt.plot(x,  y, color=c,
                                  label=l if l not in labs else "")
-                    plt.xlabel('Time (ps)',   fontsize=18)
-                    plt.ylabel('Energy (eV)', fontsize=18)
-                    plt.title('Vibrational Energy Dissipation', fontsize=20)
-                    plt.legend(fontsize=12)
-                    #plt.gca().get_legend().remove()
-                    plt.tight_layout()
-                    plt.savefig(saveName, transparent=noBkg)
-                    plt.close()
-                return
-            else:
-                csvDir  = root + dir + '/'
-                avg     = get_avg(csvDir)
-                x       = avg['Time']
-                y       = avg[property]
-                l       = labels[dir]
-                plt.plot(x,  y, label=l)
+                else:
+                    csvDir  = root + dir + '/'
+                    avg     = get_avg(csvDir)
+                    x       = avg['Time']
+                    y       = avg[property]
+                    l       = labels[dir]
+                    plt.plot(x,  y, label=l)
 
-        plt.xlabel('Time (ps)',   fontsize=18)
-        plt.ylabel('Energy (eV)', fontsize=18)
-        plt.title('Vibrational Energy Dissipation', fontsize=20)
-        plt.legend(fontsize=12)
-        #plt.gca().get_legend().remove()
-        plt.tight_layout()
-        plt.savefig(saveName, transparent=noBkg)
-        plt.close()
+            plt.xlabel('Time (ps)',   fontsize=18)
+            plt.ylabel('Energy (eV)', fontsize=18)
+            plt.title('Vibrational Energy Dissipation', fontsize=20)
+            plt.legend(fontsize=12)
+            #plt.gca().get_legend().remove()
+            plt.tight_layout()
+            plt.savefig(saveName, transparent=noBkg)
+            plt.close()
         return
 
     plot('allNu.png', 'Total Energy')
