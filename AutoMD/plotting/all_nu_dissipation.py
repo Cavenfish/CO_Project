@@ -76,12 +76,13 @@ def all_nu_dissipation(root, noBkg=False):
                         plt.plot(x,  y, color=c,
                                  label=l if l not in labs else "")
                 else:
-                    csvDir  = root + dir + '/'
-                    avg     = get_avg(csvDir)
-                    x       = avg['Time']
-                    y       = avg[property]
-                    l       = labels[dir]
-                    plt.plot(x,  y, label=l)
+                    continue
+                    # csvDir  = root + dir + '/'
+                    # avg     = get_avg(csvDir)
+                    # x       = avg['Time']
+                    # y       = avg[property]
+                    # l       = labels[dir]
+                    # plt.plot(x,  y, label=l)
 
             plt.xlabel('Time (ps)',   fontsize=18)
             plt.ylabel('Energy (eV)', fontsize=18)
