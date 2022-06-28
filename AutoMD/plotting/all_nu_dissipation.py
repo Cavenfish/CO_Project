@@ -74,14 +74,14 @@ def all_nu_dissipation(root, noBkg=False):
                         _, labs = plt.gca().get_legend_handles_labels()
                         plt.plot(x,  y, color=c,
                                  label=l if l not in labs else "")
-                plt.xlabel('Time (ps)',   fontsize=18)
-                plt.ylabel('Energy (eV)', fontsize=18)
-                plt.title('Vibrational Energy Dissipation', fontsize=20)
-                plt.legend(fontsize=12)
-                #plt.gca().get_legend().remove()
-                plt.tight_layout()
-                plt.savefig(saveName, transparent=noBkg)
-                plt.close()
+                    plt.xlabel('Time (ps)',   fontsize=18)
+                    plt.ylabel('Energy (eV)', fontsize=18)
+                    plt.title('Vibrational Energy Dissipation', fontsize=20)
+                    plt.legend(fontsize=12)
+                    #plt.gca().get_legend().remove()
+                    plt.tight_layout()
+                    plt.savefig(saveName, transparent=noBkg)
+                    plt.close()
                 return
             else:
                 csvDir  = root + dir + '/'
