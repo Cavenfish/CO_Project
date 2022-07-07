@@ -23,39 +23,53 @@ def half_life(csvDir, n=51, eType='Vibrational'):
         return avg
 
     def plot(avg, ext, property):
+        f = True
+        h = True
         #Half Life formula
         def f(x, E, tau):
             return (E * np.exp(-x / tau))
-        def g(x, E, r):
-            return E - (r*x)
-        def h(x, E0, tau, E1, m):
-            return (E0*np.exp(-x / tau)) + E1 - m*x
-        def e(x, E0, tau0, E1, tau1):
-            return (E0 * np.exp(-x / tau0)) + (E1 * np.exp(-x / tau1))
+        def h(x, E0, tau, E1):
+            return (E0*np.exp(-x / tau)) + E1
 
         saveName = csvDir + ext
         x        = avg['Time']
         y        = avg[property]
         y2       = savgol_filter(y, n, 2)
-
-        p0 = [np.average(y2[0:10]), 1, np.average(y2[-10:-1]), 1]
+        p0       = [np.average(y2[0:10]), 1, 0.0009]
 
         #Run curve fit
-        popt, pcov = curve_fit(f, x, y2, p0[0:2])
-        popt2,pcov2 = curve_fit(g, x, y2, p0[0:2])
-        popt3,pcov3 = curve_fit(h, x, y, p0)
+        try:
+            popt, pcov  = curve_fit(f, x, y2, p0[0:2])
+        except:
+            f = False
+
+        try:
+            popt1,pcov1 = curve_fit(h, x, y, p0)
+        except:
+            h = False
 
         #Make plot text
-        t1 = popt[1] * np.log(2)
-        t2 = (popt2[0]/2) / popt2[1]
-        s  = r'   Exp: $t_{1/2}$ = ' + str(t1)[:5] + ' ps\n'# + \
-             #r'Linear: $t_{1/2}$ = ' + str(t2)[:5] + ' ps'
+        if f:
+            t1 = popt[1] * np.log(2)
+        else:
+            t1 = 'N/A'
 
+        if h:
+            t2 = popt1[1] * np.log(2)
+        else:
+            t2 = 'N/A'
+
+        #Make string for plotting
+        s  = r'    Exp: $t_{1/2}$ = ' + str(t1)[:5] + ' ps\n' + \
+             r'Exp + E: $t_{1/2}$ = ' + str(t2)[:5] + ' ps'
+
+        #Plot lines and text
         plt.plot(x,  y, label='Raw Data')
         #plt.plot(x, y2, label='Savitzky-Golay Filter')
-        plt.plot(x, f(x, *popt), label='Exponential Fit')
-        #plt.plot(x, g(x, *popt2), label='Linear Fit')
-        #plt.plot(x, h(x, *popt3), label='Combination Fit')
+        if f:
+            plt.plot(x, f(x, *popt), label='Exponential Fit')
+        if h:
+            plt.plot(x, h(x, *popt1), label='Combination Fit')
         plt.text(min(x), min(y), s)
         plt.xlabel('Time (ps)',   fontsize=15)
         plt.ylabel('Energy (eV)', fontsize=15)
