@@ -28,18 +28,18 @@ def half_life(csvDir, n=51, eType='Vibrational'):
         #Half Life formula
         def f(x, E, tau):
             return (E * np.exp(-x / tau))
-        def h(x, E0, tau, E1):
-            return (E0*np.exp(-x / tau)) + E1
+        def h(x, E, tau):
+            return (E * np.exp(-x / tau)) + 0.0009
 
         saveName = csvDir + ext
         x        = avg['Time']
         y        = avg[property]
         y2       = savgol_filter(y, n, 2)
-        p0       = [np.average(y2[0:10]), 1, 0.0009]
+        p0       = [np.average(y2[0:10]), 1]
 
         #Run curve fit
         try:
-            popt, pcov  = curve_fit(f, x, y2, p0[0:2])
+            popt, pcov  = curve_fit(f, x, y, p0)
         except:
             f = False
 
