@@ -25,7 +25,7 @@ def hit_and_stick(xyz, n, saveName):
         r = randVector()
         e = r / np.linalg.norm(r)
         R = (5 + i*1.5) * e + com
-        p = 0.25 * -(e + (com/np.linalg.norm(com)))
+        p = 0.25 * -e 
 
         #Make new molecule
         new_pos = R + blank_pos
