@@ -2,7 +2,7 @@ from ..config import *
 from alphashape import alphashape
 import warnings
 
-def binding_energy(clusters, molecule, n, alpha=None):
+def binding_energy(clusters, molecule, n, fmax, alpha=None):
     def randVector():
         R     = 1
         theta = np.random.uniform(0, 1) * np.pi
@@ -28,7 +28,7 @@ def binding_energy(clusters, molecule, n, alpha=None):
     #Get all single molecule information
     mol, _    = prep_system(molecule)
     mol_opt   = BFGS(mol)
-    mol_opt.run(fmax=0.0001)
+    mol_opt.run(fmax=fmax)
     mol       = mol_opt.atoms
     mol_E     = mol.get_potential_energy()
     blank_pos = mol.get_positions()
@@ -44,7 +44,7 @@ def binding_energy(clusters, molecule, n, alpha=None):
 
         #Optimize cluster
         clu_opt   = BFGS(clu)
-        clu_opt.run(fmax=0.0001)
+        clu_opt.run(fmax=fmax)
 
         #Set optimized structures and get energy
         clu       = clu_opt.atoms
@@ -97,7 +97,7 @@ def binding_energy(clusters, molecule, n, alpha=None):
 
             #Optimize geometry of new system
             opt = BFGS(system)
-            opt.run(fmax=0.0001)
+            opt.run(fmax=fmax)
 
             #Get energy and binding energy
             ful_E = opt.atoms.get_potential_energy()
