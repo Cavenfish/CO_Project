@@ -1,4 +1,6 @@
-from ..config import *
+from ..config          import *
+from alphashape        import alphashape
+from trimesh.proximity import signed_distance
 
 def hit_and_stick(xyz, n, saveName):
     def randVector():
@@ -21,11 +23,24 @@ def hit_and_stick(xyz, n, saveName):
         mas = system.get_masses()
         com = CoM(pos, mas)
 
+        #Get alpha shape
+        a = alphashape(pos)
+        if i > 5:
+            d = np.abs(signed_distance(a, [com])[0])
+
         #Get random unit vector
         r = randVector()
         e = r / np.linalg.norm(r)
-        R = (5 + i*1.5) * e + com
+        R = 8 * e + com
         p = 0.25 * -e 
+
+        #Check is random spawn spot is far enough
+        try:
+            d = signed_distance(a, [R])[0]
+            x =  6 + d 
+            R = (8 + x) * e + com
+        except:
+            pass
 
         #Make new molecule
         new_pos = R + blank_pos
