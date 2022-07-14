@@ -66,9 +66,9 @@ def hit_and_stick(xyz, n, saveName):
         system.set_calculator(calc)
 
         #Run geometry optimization
-        traj = Trajectory(trajName, 'a', system)
-        opt  = BFGS(system, trajectory=traj)
-        opt.run(fmax=0.0001)
+        #traj = Trajectory(trajName, 'a', system)
+        #opt  = BFGS(system, trajectory=traj)
+        opt.run(fmax=1e-6)
 
         #Get last frame of simulation
         traj   = Trajectory(trajName)

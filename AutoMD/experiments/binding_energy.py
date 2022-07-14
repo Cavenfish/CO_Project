@@ -97,7 +97,11 @@ def binding_energy(clusters, molecule, n, fmax, alpha=None):
 
             #Optimize geometry of new system
             opt = BFGS(system)
-            opt.run(fmax=fmax)
+            try:
+                opt.run(fmax=fmax)
+            except:
+                BE_dict[cluKey].append(np.nan)
+                continue
 
             #Get energy and binding energy
             ful_E = opt.atoms.get_potential_energy()
