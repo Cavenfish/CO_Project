@@ -126,7 +126,7 @@ def Morse_energy(nu, n):
     V_mor = tmp - ( (tmp**2) / (4 * D_e) )
     return V_mor
 
-def excite_molecule(xyz, swap, E):
+def excite_molecule(xyz, swap, E, many_excite=''):
     #Get pos from system
     system, _ = prep_system(xyz)
     pos       = system.get_positions()[swap]
@@ -153,9 +153,26 @@ def excite_molecule(xyz, swap, E):
     del system[swap]
     system = new_atoms + system
 
+    #Special case for many excite
+    if many_excite:
+        write(xyz, system)
+        return 
+
     #Write XYZ file of system with isotope
     new_name = xyz.replace('.xyz', '_excited.xyz')
     write(new_name, system)
+
+    return new_name
+
+def excite_many_molecules(xyz, n, E):
+    system, _ = prep_system(xyz)
+    N         = len(system)
+    new_name  = xyz.replace('.xyz', '_' + str(n) + 'excited.xyz')
+    write(new_name, system)
+
+    for i in range(n+1):
+        j = np.random.randint(0, N//2)
+        excite_molecule(new_name, [j*2, j*2+1], E, new_name)
 
     return new_name
 
