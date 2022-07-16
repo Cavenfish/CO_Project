@@ -2,7 +2,7 @@ from ..config          import *
 from alphashape        import alphashape
 from trimesh.proximity import signed_distance
 
-def hit_and_stick(xyz, n, saveName, vE=0.25):
+def hit_and_stick(xyz, n, saveName, fmax=1e-6):
     def randVector():
         R     = 1
         theta = np.random.uniform(0, 1) * np.pi
@@ -32,12 +32,12 @@ def hit_and_stick(xyz, n, saveName, vE=0.25):
         r = randVector()
         e = r / np.linalg.norm(r)
         R = 8 * e + com
-        p = vE * -e 
+        p = 0.25 * -e
 
         #Check is random spawn spot is far enough
         try:
             d = signed_distance(a, [R])[0]
-            x =  6 + d 
+            x =  6 + d
             R = (8 + x) * e + com
         except:
             pass
@@ -67,8 +67,8 @@ def hit_and_stick(xyz, n, saveName, vE=0.25):
 
         #Run geometry optimization
         #traj = Trajectory(trajName, 'a', system)
-        opt  = BFGS(system)#, trajectory=traj)
-        opt.run(fmax=1e-6)
+        #opt  = BFGS(system, trajectory=traj)
+        opt.run(fmax=fmax)
 
         #Get last frame of simulation
         traj   = Trajectory(trajName)
