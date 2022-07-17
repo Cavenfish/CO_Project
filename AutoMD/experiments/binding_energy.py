@@ -2,7 +2,7 @@ from ..config import *
 from alphashape import alphashape
 import warnings
 
-def binding_energy(clusters, molecule, n, fmax, alpha=None):
+def binding_energy(clusters, molecule, n, fmax, saveName, alpha=None):
     def randVector():
         R     = 1
         theta = np.random.uniform(0, 1) * np.pi
@@ -112,6 +112,6 @@ def binding_energy(clusters, molecule, n, fmax, alpha=None):
 
     #Make DataFrame and csv
     df = pd.DataFrame(BE_dict)
-    df.to_csv('BE_test.csv')
+    df.to_csv(saveName)
 
     return

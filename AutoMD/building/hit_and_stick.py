@@ -25,8 +25,6 @@ def hit_and_stick(xyz, n, saveName, fmax=1e-6):
 
         #Get alpha shape
         a = alphashape(pos)
-        if i > 5:
-            d = np.abs(signed_distance(a, [com])[0])
 
         #Get random unit vector
         r = randVector()
