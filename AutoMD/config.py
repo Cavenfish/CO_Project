@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from scipy.constants import c
 from ase.io import read, write
 from ase import units, Atoms
-from ase.optimize import BFGS
+from ase.optimize import BFGS, FIRE, GPMin, MDMin
 from .MvH_CO_JM8_Numba import MvH_CO
 from ase.visualize import view
 from ase.vibrations import Vibrations
@@ -240,15 +240,21 @@ def Morse_excitation(nu, n):
 
     return r_A
 
-def geo_opt(xyz, fmax=0.0001):
+def geo_opt(xyz, fmax=0.0001, method='BFGS'):
     #Read in system and set van Hemert calculator
     system, calc = prep_system(xyz)
 
     #Make trajectory string
     traj  = xyz.replace('.xyz', '_opt.traj')
 
-    #Run BFGS optimization of geometry
-    opt   = BFGS(system, trajectory=traj)
+    #Methods dictionary
+    meth  = {'BFGS' :  BFGS(system, trajectory=traj),
+             'FIRE' :  FIRE(system, trajectory=traj),
+             'GPMin': GPMin(system, trajectory=traj),
+             'MDMin': MDMin(system, trajectory=traj)}
+
+    #Run optimization of geometry
+    opt   = meth[method]
     opt.run(fmax=fmax)
 
     #Make XYZ file of optimized system
