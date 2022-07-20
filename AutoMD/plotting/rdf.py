@@ -4,16 +4,16 @@ from ase.geometry.analysis import Analysis
 def rdf(xyz, rmax, nbins, elem):
     system = read(xyz)
     system.set_cell([100,100,100])
-    
+
     ana = Analysis(system)
-    g,r = ana.get_rdf(rmax=rmax, nbins=nbins, elements=elem, 
+    g,r = ana.get_rdf(rmax=rmax, nbins=nbins, elements=elem,
                       return_dists=True)[0]
     plt.plot(r, g)
     plt.show()
     return
 
 def rdf_of_array(xyzs, rmax, nbins, elem):
-    
+
     for xyz in xyzs:
         system = read(xyz)
         system.set_cell([100,100,100])
@@ -42,7 +42,6 @@ def rdf_of_traj(traj, rmax, nbins, elem):
 
     plt.plot(r0,g0, color='blue')
     plt.plot(r1,g1, color='red')
-    plt.show()
+    plt.savefig(traj.replace('.traj', '.png'))
+    plt.close()
     return
-
-
