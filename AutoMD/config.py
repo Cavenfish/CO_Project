@@ -156,7 +156,7 @@ def excite_molecule(xyz, swap, E, many_excite=''):
     #Special case for many excite
     if many_excite:
         write(xyz, system)
-        return 
+        return
 
     #Write XYZ file of system with isotope
     new_name = xyz.replace('.xyz', '_excited.xyz')
@@ -168,11 +168,15 @@ def excite_many_molecules(xyz, n, E):
     system, _ = prep_system(xyz)
     N         = len(system)
     new_name  = xyz.replace('.xyz', '_' + str(n) + 'excited.xyz')
+    i         = 0
     write(new_name, system)
 
-    for i in range(n+1):
-        j = np.random.randint(0, N//2)
-        excite_molecule(new_name, [j*2, j*2+1], E, new_name)
+    while i < n:
+        j = np.random.randint(i, N//2)
+        p = [j*2, j*2+1]
+
+        excite_molecule(new_name, p, E, new_name)
+        i += 1
 
     return new_name
 
