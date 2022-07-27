@@ -2,7 +2,7 @@ from ..config          import *
 from alphashape        import alphashape
 from trimesh.proximity import signed_distance
 
-def hit_and_stick(xyz, n, saveName, fmax=1e-6):
+def hit_and_stick(xyz, mol, n, saveName, fmax=1e-6):
     def randVector():
         R     = 1
         theta = np.random.uniform(0, 1) * np.pi
@@ -15,7 +15,8 @@ def hit_and_stick(xyz, n, saveName, fmax=1e-6):
         return [x,y,z]
 
     system, _ = prep_system(xyz)
-    blank_pos = system.get_positions()
+    molec,  _ = prep_system(mol)
+    blank_pos = molec.get_positions()
     trajName  = xyz.replace('.xyz', '.traj')
 
     for i in range(n):
