@@ -1,8 +1,8 @@
 from ..config import *
 from alphashape import alphashape
-import warnings
 
-def binding_energy(clusters, molecule, n, fmax, saveName, alpha=None):
+def binding_energy(clusters, molecule, n, fmax, saveName,
+                   isoClu=None, isoMol=None, alpha=None):
     def randVector():
         R     = 1
         theta = np.random.uniform(0, 1) * np.pi
@@ -25,6 +25,28 @@ def binding_energy(clusters, molecule, n, fmax, saveName, alpha=None):
         mesh = alphashape(cmList, alpha)
         return mesh
 
+    def make_name(i, cluster):
+        if (isoMol) and (isoClu):
+            s    = '_Mol' + str(int(sum(isoMol))) + '_Clu' + \
+                   str(int(sum(isoClu)))  + '_BE' + str(i) + '.xyz'
+            name = cluster.replace('.xyz', s)
+            return name
+
+        if (isoMol):
+            s    = '_Mol' + str(int(sum(isoMol))) + '_BE' + str(i) + '.xyz'
+            name = cluster.replace('.xyz', s)
+            return name
+
+        if (isoClu):
+            s    = '_Clu' + str(int(sum(isoClu))) + '_BE' + str(i) + '.xyz'
+            name = cluster.replace('.xyz', s)
+            return name
+
+        s    = '_BE' + str(i) + '.xyz'
+        name = cluster.replace('.xyz', s)
+
+        return name
+
     #Get all single molecule information
     mol, _    = prep_system(molecule)
     mol_opt   = BFGS(mol)
@@ -40,6 +62,9 @@ def binding_energy(clusters, molecule, n, fmax, saveName, alpha=None):
 
         #Prep systems
         clu, _    = prep_system(cluster)
+        if isoClu:
+            m = isoClu * (len(mol.get_masses()) // 2)
+            clu.set_masses(m)
         clu_com   = CoM(clu.get_positions(), clu.get_masses())
 
         #Optimize cluster
@@ -62,15 +87,6 @@ def binding_energy(clusters, molecule, n, fmax, saveName, alpha=None):
         start     = (N % n) // 2
         step      = N // n
 
-        #Prevent overasking for binding sites
-        if n > N:
-            warnings.warn('\n Requested number of binding sites is larger than ' + \
-                          'number of verticies. The requested amount will ' + \
-                          'be made equal to the number of verticies.')
-            continue
-
-
-
         #Declare a BE dictionary
         cluKey          = 'Cluster ' + str(k)
         BE_dict[cluKey] = []
@@ -84,7 +100,7 @@ def binding_energy(clusters, molecule, n, fmax, saveName, alpha=None):
 
             #Make new molecule
             new_pos = R + blank_pos
-            new_mol = Atoms('CO', positions=new_pos)
+            new_mol = Atoms('CO', positions=new_pos, masses=isoMol)
 
             #Make system and prep system
             system = clu + new_mol
@@ -92,7 +108,7 @@ def binding_energy(clusters, molecule, n, fmax, saveName, alpha=None):
             system.set_calculator(calc)
 
             #Write xyz of binding site pre optimization
-            new_name = cluster.replace('.xyz', '_BE' + str(i) + '.xyz')
+            new_name = make_name(i, cluster)
             write(new_name, system)
 
             #Optimize geometry of new system
