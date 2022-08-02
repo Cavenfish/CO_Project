@@ -469,7 +469,7 @@ class MvH_CO(Calculator):
     # COCO_FX_MODE     ->  If True, do not add torque-free projection of
     #                        forces on X to C and O 
     parameters_runtime = { "COCO_Q_VARIABLE"  : True,
-	                   "COCO_CMS_WEIGHTS" : False,
+	                   "COCO_CMS_WEIGHTS" : True,
 	                   "COCO_FQ_MODE"     : False,
 	                   "COCO_FX_MODE"     : True}
 

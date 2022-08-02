@@ -1,8 +1,7 @@
 from ..config import *
 from alphashape import alphashape
 
-def binding_energy(clusters, molecule, n, fmax, saveName,
-                   isoClu=None, isoMol=None, alpha=None):
+def binding_energy(clusters, molecule, n, fmax, saveName, alpha=None):
     def randVector():
         R     = 1
         theta = np.random.uniform(0, 1) * np.pi
@@ -25,28 +24,6 @@ def binding_energy(clusters, molecule, n, fmax, saveName,
         mesh = alphashape(cmList, alpha)
         return mesh
 
-    def make_name(i, cluster):
-        if (isoMol) and (isoClu):
-            s    = '_Mol' + str(int(sum(isoMol))) + '_Clu' + \
-                   str(int(sum(isoClu)))  + '_BE' + str(i) + '.xyz'
-            name = cluster.replace('.xyz', s)
-            return name
-
-        if (isoMol):
-            s    = '_Mol' + str(int(sum(isoMol))) + '_BE' + str(i) + '.xyz'
-            name = cluster.replace('.xyz', s)
-            return name
-
-        if (isoClu):
-            s    = '_Clu' + str(int(sum(isoClu))) + '_BE' + str(i) + '.xyz'
-            name = cluster.replace('.xyz', s)
-            return name
-
-        s    = '_BE' + str(i) + '.xyz'
-        name = cluster.replace('.xyz', s)
-
-        return name
-
     #Get all single molecule information
     mol, _    = prep_system(molecule)
     mol_opt   = BFGS(mol)
@@ -62,9 +39,6 @@ def binding_energy(clusters, molecule, n, fmax, saveName,
 
         #Prep systems
         clu, _    = prep_system(cluster)
-        if isoClu:
-            m = isoClu * (len(mol.get_masses()) // 2)
-            clu.set_masses(m)
         clu_com   = CoM(clu.get_positions(), clu.get_masses())
 
         #Optimize cluster
@@ -100,7 +74,7 @@ def binding_energy(clusters, molecule, n, fmax, saveName,
 
             #Make new molecule
             new_pos = R + blank_pos
-            new_mol = Atoms('CO', positions=new_pos, masses=isoMol)
+            new_mol = Atoms('CO', positions=new_pos)
 
             #Make system and prep system
             system = clu + new_mol
@@ -108,8 +82,9 @@ def binding_energy(clusters, molecule, n, fmax, saveName,
             system.set_calculator(calc)
 
             #Write xyz of binding site pre optimization
-            new_name = make_name(i, cluster)
-            write(new_name, system)
+            s    = '_BE' + str(i) + '.xyz'
+            name = cluster.replace('.xyz', s)
+            write(name, system)
 
             #Optimize geometry of new system
             opt = BFGS(system)
@@ -118,6 +93,10 @@ def binding_energy(clusters, molecule, n, fmax, saveName,
             except:
                 BE_dict[cluKey].append(np.nan)
                 continue
+            
+            #Write out opt geo
+            opt_name = new_name.replace('.xyz', '_opt.xyz')
+            write(opt_name, system)
 
             #Get energy and binding energy
             ful_E = opt.atoms.get_potential_energy()
