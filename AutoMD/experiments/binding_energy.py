@@ -82,9 +82,9 @@ def binding_energy(clusters, molecule, n, fmax, saveName, alpha=None):
             system.set_calculator(calc)
 
             #Write xyz of binding site pre optimization
-            s    = '_BE' + str(i) + '.xyz'
-            name = cluster.replace('.xyz', s)
-            write(name, system)
+            s        = '_BE' + str(i) + '.xyz'
+            new_name = cluster.replace('.xyz', s)
+            write(new_name, system)
 
             #Optimize geometry of new system
             opt = BFGS(system)
