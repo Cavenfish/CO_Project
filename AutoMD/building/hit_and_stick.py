@@ -2,7 +2,7 @@ from ..config          import *
 from alphashape        import alphashape
 from trimesh.proximity import signed_distance
 
-def hit_and_stick(xyz, mol, n, saveName, fmax=1e-6):
+def hit_and_stick(xyz, mol, n, saveName, fmax=1e-6, NVEtime=5):
     def randVector():
         R     = 1
         theta = np.random.uniform(0, 1) * np.pi
@@ -56,7 +56,7 @@ def hit_and_stick(xyz, mol, n, saveName, fmax=1e-6):
         else:
             traj = Trajectory(trajName, 'a', system)
         dyn.attach(traj.write, interval=1)
-        dyn.run(5000)
+        dyn.run(NVEtime * 1000)
 
         #Get last frame of simulation
         traj   = Trajectory(trajName)
