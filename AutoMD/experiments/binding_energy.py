@@ -25,29 +25,34 @@ def binding_energy(clusters, molecule, n, fmax, saveName, alpha=None):
         return mesh
 
     #Get all single molecule information
-    mol, _    = prep_system(molecule)
+    mol, calc = prep_system(molecule)
     mol_opt   = BFGS(mol)
     mol_opt.run(fmax=fmax)
     mol       = mol_opt.atoms
     mol_E     = mol.get_potential_energy()
+    mol_cont  = np.array(calc.get_energy_contributions()[2:])
     blank_pos = mol.get_positions()
     BE_dict   = {}
+    contri    = {'Exchange': [], 'Dispersion': [], 'Electrostatic': []}
 
     k = 0
     for cluster in clusters:
         k += 1
 
+        try:
+            clu, calc = prep_system(cluster.replace('.xyz', '_opt.xyz'))
+        except:
+            clu, calc = prep_system(cluster)
+            clu_opt   = BFGS(clu)
+            clu_opt.run(fmax=fmax)
+            write(cluster.replace('.xyz', '_opt.xyz'), clu)
+
         #Prep systems
-        clu, _    = prep_system(cluster)
         clu_com   = CoM(clu.get_positions(), clu.get_masses())
 
-        #Optimize cluster
-        clu_opt   = BFGS(clu)
-        clu_opt.run(fmax=fmax)
-
         #Set optimized structures and get energy
-        clu       = clu_opt.atoms
         clu_E     = clu.get_potential_energy()
+        clu_cont  = np.array(calc.get_energy_contributions()[2:])
 
         #Get variables needed later in loop
         com       = CoM(clu.get_positions(), clu.get_masses())
@@ -61,11 +66,29 @@ def binding_energy(clusters, molecule, n, fmax, saveName, alpha=None):
         start     = (N % n) // 2
         step      = N // n
 
-        #Declare a BE dictionary
+        #Declare a BE and contributions dictionary
         cluKey          = 'Cluster ' + str(k)
         BE_dict[cluKey] = []
 
         for i in range(n):
+
+            #Check if calculation already done
+            s     = '_BE%d_opt.xyz' % i
+            check = cluster.replace('.xyz', s)
+            try:
+                sys, calc = prep_system(check)
+                ful_E     = sys.get_potential_energy()
+                ful_cont  = np.array(calc.get_energy_contributions()[2:])
+                BE        = ful_E - clu_E - mol_E
+                cont      = ful_cont - clu_cont - mol_cont
+                cont      = np.abs(cont) / sum(np.abs(cont)) * 100
+                BE_dict[cluKey].append(BE)
+                contri['Exchange'].append(cont[0])
+                contri['Dispersion'].append(cont[1])
+                contri['Electrostatic'].append(cont[2])
+                continue
+            except:
+                pass
 
             #Get random face normal vector
             u = start + i * step
@@ -93,7 +116,7 @@ def binding_energy(clusters, molecule, n, fmax, saveName, alpha=None):
             except:
                 BE_dict[cluKey].append(np.nan)
                 continue
-            
+
             #Write out opt geo
             opt_name = new_name.replace('.xyz', '_opt.xyz')
             write(opt_name, system)
@@ -108,5 +131,7 @@ def binding_energy(clusters, molecule, n, fmax, saveName, alpha=None):
     #Make DataFrame and csv
     df = pd.DataFrame(BE_dict)
     df.to_csv(saveName)
+    df = pd.DataFrame(contri)
+    df.to_csv(saveName.replace('.csv', '_contri.csv'))
 
     return
