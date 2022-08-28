@@ -1,5 +1,6 @@
-from ..config import *
-from alphashape import alphashape
+from ..config                import *
+from alphashape              import alphashape
+from scipy.spatial.transform import Rotation
 
 def binding_energy(clusters, molecule, n, fmax, saveName, alpha=None):
     def randVector():
@@ -12,6 +13,18 @@ def binding_energy(clusters, molecule, n, fmax, saveName, alpha=None):
         z = R * np.cos(theta)
 
         return [x,y,z]
+
+    def randRotate(v):
+        r = Rotation.random()
+        V = r.apply(v)
+        return V
+
+    def checkDistance(v, pos):
+        for p in pos:
+            d = np.linalg.norm(v-p)
+            if d < 3:
+                return True
+        return False
 
     def get_mesh(atoms):
         cmList = []
@@ -97,6 +110,13 @@ def binding_energy(clusters, molecule, n, fmax, saveName, alpha=None):
 
             #Make new molecule
             new_pos = R + blank_pos
+            new_pos = randRotate(new_pos)
+    
+            #Check disance from vert
+            if checkDistance(new_pos, clu.get_positions()):
+                R       = (6 * r) + verts[u]
+                new_pos = R + blank_pos
+
             new_mol = Atoms('CO', positions=new_pos)
 
             #Make system and prep system
@@ -124,9 +144,20 @@ def binding_energy(clusters, molecule, n, fmax, saveName, alpha=None):
             #Get energy and binding energy
             ful_E = opt.atoms.get_potential_energy()
             BE    = ful_E - clu_E - mol_E
+    
+            #Get energy contributions
+            ful_cont  = np.array(calc.get_energy_contributions()[2:])
+            cont      = ful_cont - clu_cont - mol_cont
+            cont      = np.abs(cont) / sum(np.abs(cont)) * 100
+            
+            #Add energy contributions to dicts
+            contri['Exchange'].append(cont[0])
+            contri['Dispersion'].append(cont[1])
+            contri['Electrostatic'].append(cont[2])
 
             #Add energy to dict
             BE_dict[cluKey].append(BE)
+
 
     #Make DataFrame and csv
     df = pd.DataFrame(BE_dict)

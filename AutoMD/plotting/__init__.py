@@ -16,7 +16,6 @@ from .rdf                      import rdf
 from .rdf                      import rdf_of_traj
 from .rdf                      import rdf_of_array
 from .neighbor_energy          import neighbor_energy
-from .BE_contributions         import BE_contributions
 
 __functions__ = [spaghetti_plot,
                  energy_contributions,
