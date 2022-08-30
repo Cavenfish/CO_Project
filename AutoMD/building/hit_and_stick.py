@@ -16,9 +16,21 @@ def hit_and_stick(xyz, mol, n, saveName, fmax=1e-6, NVEtime=5, KE=0.25):
         return [x,y,z]
 
     def randRotate(v):
-        r = Rotation.random()
-        V = r.apply(v)
+        rot = Rotation.random()
+        V   = rot.apply(v)
         return V
+
+    def checkDistance(v, pos, r):
+        for p in pos:
+            a = np.linalg.norm(v[0]-p)
+            b = np.linalg.norm(v[1]-p)
+            if (a < 3) or (b < 3):
+                v[0] += r
+                v[1] += r
+                v  = checkDistance(v, pos, r)
+                break
+        return v
+
 
     system, _ = prep_system(xyz)
     molec,  _ = prep_system(mol)
@@ -38,18 +50,10 @@ def hit_and_stick(xyz, mol, n, saveName, fmax=1e-6, NVEtime=5, KE=0.25):
         e = r / np.linalg.norm(r)
         R = 8 * e + com
 
-        #Check is random spawn spot is far enough
-        D = 8
-        for v in pos:
-            d = np.linalg.norm(R-v)
-            if (d < 8) and (d < D):
-                D = d
-
-        R = (8 + 8 - D) * e + com
-
         #Make new molecule
         new_pos = R + blank_pos
         new_pos = randRotate(new_pos)
+        new_pos = checkDistance(new_pos, pos, e)
     
         #Get rho
         diff    = com - CoM(new_pos, mas[:2])

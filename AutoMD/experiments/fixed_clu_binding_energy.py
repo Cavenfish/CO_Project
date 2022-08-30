@@ -12,9 +12,11 @@ def fixed_clu_binding_energy(clusters, molecule, n, fmax, saveName, alpha=None):
 
     def checkDistance(v, pos, r):
         for p in pos:
-            d = np.linalg.norm(v-p)
-            if d < 3:
-                v += 1*r
+            a = np.linalg.norm(v[0]-p)
+            b = np.linalg.norm(v[1]-p)
+            if (a < 3) or (b < 3):
+                v[0] += r
+                v[1] += r
                 v  = checkDistance(v, pos, r)
                 break
         return v
@@ -100,13 +102,11 @@ def fixed_clu_binding_energy(clusters, molecule, n, fmax, saveName, alpha=None):
             u = start + i * step
             r = norms[u]
             R = (3 * r) + verts[u]
-    
-            #Check disance from vert
-            R = checkDistance(R, clu.get_positions(), r)
 
             #Make new molecule
             new_pos = R + blank_pos
             new_pos = randRotate(new_pos)
+            new_pos = checkDistance(new_pos, clu.get_positions(), r)
             new_mol = Atoms('CO', positions=new_pos)
 
             #Make system and prep system
@@ -125,9 +125,13 @@ def fixed_clu_binding_energy(clusters, molecule, n, fmax, saveName, alpha=None):
             traj = new_name.replace('.xyz', '.traj')
             opt = BFGS(system, trajectory=traj)
             try:
-                opt.run(fmax=fmax)
+                opt.run(fmax=fmax, steps=5000)
+                assert opt.converged() == True
             except:
                 BE_dict[cluKey].append(np.nan)
+                contri['Exchange'].append(np.nan)
+                contri['Dispersion'].append(np.nan)
+                contri['Electrostatic'].append(np.nan)
                 continue
 
             #Write out opt geo

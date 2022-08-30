@@ -3,28 +3,22 @@ from alphashape              import alphashape
 from scipy.spatial.transform import Rotation
 
 def binding_energy(clusters, molecule, n, fmax, saveName, alpha=None):
-    def randVector():
-        R     = 1
-        theta = np.random.uniform(0, 1) * np.pi
-        phi   = np.random.uniform(0, 2) * np.pi
-
-        x = R * np.cos(phi) * np.sin(theta)
-        y = R * np.sin(phi) * np.sin(theta)
-        z = R * np.cos(theta)
-
-        return [x,y,z]
 
     def randRotate(v):
-        r = Rotation.random()
-        V = r.apply(v)
+        rot = Rotation.random()
+        V   = rot.apply(v)
         return V
 
     def checkDistance(v, pos):
         for p in pos:
-            d = np.linalg.norm(v-p)
-            if d < 3:
-                return True
-        return False
+            a = np.linalg.norm(v[0]-p)
+            b = np.linalg.norm(v[1]-p)
+            if (a < 3) or (b < 3):
+                v[0] += r
+                v[1] += r
+                v  = checkDistance(v, pos, r)
+                break
+        return v
 
     def get_mesh(atoms):
         cmList = []
@@ -111,12 +105,7 @@ def binding_energy(clusters, molecule, n, fmax, saveName, alpha=None):
             #Make new molecule
             new_pos = R + blank_pos
             new_pos = randRotate(new_pos)
-    
-            #Check disance from vert
-            if checkDistance(new_pos, clu.get_positions()):
-                R       = (6 * r) + verts[u]
-                new_pos = R + blank_pos
-
+            new_pos = checkDistance(new_pos, clu.get_positions(), r)
             new_mol = Atoms('CO', positions=new_pos)
 
             #Make system and prep system
@@ -132,9 +121,13 @@ def binding_energy(clusters, molecule, n, fmax, saveName, alpha=None):
             #Optimize geometry of new system
             opt = BFGS(system)
             try:
-                opt.run(fmax=fmax)
+                opt.run(fmax=fmax, steps=5000)
+                assert opt.converged() == True
             except:
                 BE_dict[cluKey].append(np.nan)
+                contri['Exchange'].append(np.nan)
+                contri['Dispersion'].append(np.nan)
+                contri['Electrostatic'].append(np.nan)
                 continue
 
             #Write out opt geo
