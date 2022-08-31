@@ -9,7 +9,7 @@ def binding_energy(clusters, molecule, n, fmax, saveName, alpha=None):
         V   = rot.apply(v)
         return V
 
-    def checkDistance(v, pos):
+    def checkDistance(v, pos, r):
         for p in pos:
             a = np.linalg.norm(v[0]-p)
             b = np.linalg.norm(v[1]-p)
