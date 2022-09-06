@@ -14,11 +14,21 @@ def binding_energy(clusters, molecule, n, fmax, saveName, alpha=None):
             a = np.linalg.norm(v[0]-p)
             b = np.linalg.norm(v[1]-p)
             if (a < 3) or (b < 3):
-                v[0] += r
-                v[1] += r
+                v[0] += 0.1*r
+                v[1] += 0.1*r
                 v  = checkDistance(v, pos, r)
                 break
         return v
+    
+    def get_minD(v, pos):
+        x = 10000
+        for p in pos:
+            a = np.linalg.norm(v[0]-p)
+            b = np.linalg.norm(v[1]-p)
+            if (a < x) or (b < x):
+                x = min([a,b])
+        return x
+
 
     def get_mesh(atoms):
         cmList = []
@@ -100,13 +110,21 @@ def binding_energy(clusters, molecule, n, fmax, saveName, alpha=None):
             #Get random face normal vector
             u = start + i * step
             r = norms[u]
-            R = (3 * r) + verts[u]
+            R = 0.1*r + verts[u]
 
             #Make new molecule
-            new_pos = R + blank_pos
-            new_pos = randRotate(new_pos)
+            tmp_pos = randRotate(blank_pos)
+            new_pos = R + tmp_pos
             new_pos = checkDistance(new_pos, clu.get_positions(), r)
             new_mol = Atoms('CO', positions=new_pos)
+
+            D = get_minD(new_pos, clu.get_positions())
+            if D > 5:
+                BE_dict[cluKey].append(np.nan)
+                contri['Exchange'].append(np.nan)
+                contri['Dispersion'].append(np.nan)
+                contri['Electrostatic'].append(np.nan)
+                continue
 
             #Make system and prep system
             system = clu + new_mol
