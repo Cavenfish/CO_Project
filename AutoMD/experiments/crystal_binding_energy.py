@@ -16,8 +16,7 @@ def crystal_binding_energy(cluster, molecule, n, posList, fmax, saveName):
     mol       = mol_opt.atoms
     mol_E     = mol.get_potential_energy()
     blank_pos = mol.get_positions()
-    cluKey    = 'Binding Energy'
-    BE_dict   = {cluKey:[]}
+    BE_dict   = {}
 
     #Prep systems
     clu, _    = prep_system(cluster)
@@ -26,7 +25,7 @@ def crystal_binding_energy(cluster, molecule, n, posList, fmax, saveName):
     clu.set_constraint(fixed)
 
     #Optimize cluster
-    clu_opt   = BFGS(clu, trajectory=cluster.replace('xyz','traj'))
+    clu_opt   = BFGS(clu)
     clu_opt.run(fmax=fmax)
 
     #Set optimized structures and get energy
@@ -35,10 +34,13 @@ def crystal_binding_energy(cluster, molecule, n, posList, fmax, saveName):
     (x,y,z)   = clu.get_positions()[-1]
 
     for i in range(len(posList)):
+        cluKey          = 'Pos %d' % i
+        BE_dict[cluKey] = []
         for j in range(n):
 
             #Get new molecule pos
             R       = np.array(posList[i])
+            
 
             #Make new molecule
             tmp_pos = randRotate(blank_pos)
@@ -59,9 +61,10 @@ def crystal_binding_energy(cluster, molecule, n, posList, fmax, saveName):
             write(new_name, system)
 
             #Optimize geometry of new system
-            opt = BFGS(system, trajectory=s.replace('.xyz', '.traj'))
+            opt = BFGS(system)
             try:
-                opt.run(fmax=fmax)
+                opt.run(fmax=fmax, steps=5000)
+                assert opt.converged() == True
             except:
                 BE_dict[cluKey].append(np.nan)
                 continue

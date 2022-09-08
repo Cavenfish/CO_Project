@@ -24,9 +24,9 @@ def hit_and_stick(xyz, mol, n, saveName, fmax=1e-6, NVEtime=5, KE=0.25):
         for p in pos:
             a = np.linalg.norm(v[0]-p)
             b = np.linalg.norm(v[1]-p)
-            if (a < 3) or (b < 3):
-                v[0] += r
-                v[1] += r
+            if (a < 5) or (b < 5):
+                v[0] += 0.1*r
+                v[1] += 0.1*r
                 v  = checkDistance(v, pos, r)
                 break
         return v
@@ -51,8 +51,8 @@ def hit_and_stick(xyz, mol, n, saveName, fmax=1e-6, NVEtime=5, KE=0.25):
         R = 8 * e + com
 
         #Make new molecule
-        new_pos = R + blank_pos
-        new_pos = randRotate(new_pos)
+        tmp_pos = randRotate(blank_pos)
+        new_pos = R + tmp_pos
         new_pos = checkDistance(new_pos, pos, e)
     
         #Get rho
