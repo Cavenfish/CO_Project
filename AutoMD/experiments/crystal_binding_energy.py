@@ -2,12 +2,18 @@ from ..config import *
 from scipy.spatial.transform import Rotation
 from ase.constraints import FixAtoms
 
-def crystal_binding_energy(cluster, molecule, n, posList, fmax, saveName):
+def crystal_binding_energy(cluster, molecule, n, plane, fmax, saveName):
 
     def randRotate(v):
         rot = Rotation.random()
         V   = rot.apply(v)
         return V
+
+    def getRandInPlane(plane):
+        x = np.random.uniform(*plane[0])
+        y = np.random.uniform(*plane[1])
+        z = 37
+        return (x,y,z)
 
     #Get all single molecule information
     mol, _    = prep_system(molecule)
@@ -16,7 +22,9 @@ def crystal_binding_energy(cluster, molecule, n, posList, fmax, saveName):
     mol       = mol_opt.atoms
     mol_E     = mol.get_potential_energy()
     blank_pos = mol.get_positions()
-    BE_dict   = {}
+    cluKey    = 'Binding Energy'
+    BE_dict   = {cluKey:[]}
+
 
     #Prep systems
     clu, _    = prep_system(cluster)
@@ -33,52 +41,48 @@ def crystal_binding_energy(cluster, molecule, n, posList, fmax, saveName):
     clu_E     = clu.get_potential_energy()
     (x,y,z)   = clu.get_positions()[-1]
 
-    for i in range(len(posList)):
-        cluKey          = 'Pos %d' % i
-        BE_dict[cluKey] = []
-        for j in range(n):
+    for i in range(n):
 
-            #Get new molecule pos
-            R       = np.array(posList[i])
-            
+        #Get new molecule pos
+        R       = getRandInPlane(plane)    
 
-            #Make new molecule
-            tmp_pos = randRotate(blank_pos)
-            new_pos = R + tmp_pos
-            new_mol = Atoms('CO', positions=new_pos)
+        #Make new molecule
+        tmp_pos = randRotate(blank_pos)
+        new_pos = R + tmp_pos
+        new_mol = Atoms('CO', positions=new_pos)
 
-            #Make system and prep system
-            system = clu + new_mol
-            fixed  = FixAtoms(
-                    indices=[x.index for x in system if x.position[2] < 32])
-            system.set_constraint(fixed)
-            calc   = MvH_CO(atoms=system)
-            system.set_calculator(calc)
+        #Make system and prep system
+        system = clu + new_mol
+        fixed  = FixAtoms(
+                indices=[x.index for x in system if x.position[2] < 32])
+        system.set_constraint(fixed)
+        calc   = MvH_CO(atoms=system)
+        system.set_calculator(calc)
 
-            #Write xyz of binding site pre optimization
-            s        = '_pos%d_BE%d.xyz' % (i,j)
-            new_name = cluster.replace('.xyz', s)
-            write(new_name, system)
+        #Write xyz of binding site pre optimization
+        s        = '_BE%d.xyz' % i
+        new_name = cluster.replace('.xyz', s)
+        write(new_name, system)
 
-            #Optimize geometry of new system
-            opt = BFGS(system)
-            try:
-                opt.run(fmax=fmax, steps=5000)
-                assert opt.converged() == True
-            except:
-                BE_dict[cluKey].append(np.nan)
-                continue
+        #Optimize geometry of new system
+        opt = BFGS(system)
+        try:
+            opt.run(fmax=fmax, steps=5000)
+            assert opt.converged() == True
+        except:
+            BE_dict[cluKey].append(np.nan)
+            continue
 
-            #Write out opt geo
-            opt_name = new_name.replace('.xyz', '_opt.xyz')
-            write(opt_name, system)
+        #Write out opt geo
+        opt_name = new_name.replace('.xyz', '_opt.xyz')
+        write(opt_name, system)
 
-            #Get energy and binding energy
-            ful_E = opt.atoms.get_potential_energy()
-            BE    = ful_E - clu_E - mol_E
+        #Get energy and binding energy
+        ful_E = opt.atoms.get_potential_energy()
+        BE    = ful_E - clu_E - mol_E
 
-            #Add energy to dict
-            BE_dict[cluKey].append(BE)
+        #Add energy to dict
+        BE_dict[cluKey].append(BE)
 
     #Make DataFrame and csv
     df = pd.DataFrame(BE_dict)

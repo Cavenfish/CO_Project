@@ -15,8 +15,8 @@ def fixed_clu_binding_energy(clusters, molecule, n, fmax, saveName, alpha=None):
             a = np.linalg.norm(v[0]-p)
             b = np.linalg.norm(v[1]-p)
             if (a < 3) or (b < 3):
-                v[0] += r
-                v[1] += r
+                v[0] += 0.1*r
+                v[1] += 0.1*r
                 v  = checkDistance(v, pos, r)
                 break
         return v
@@ -101,17 +101,18 @@ def fixed_clu_binding_energy(clusters, molecule, n, fmax, saveName, alpha=None):
             #Get random face normal vector
             u = start + i * step
             r = norms[u]
-            R = (3 * r) + verts[u]
+            R = r + verts[u]
 
             #Make new molecule
-            new_pos = R + blank_pos
-            new_pos = randRotate(new_pos)
+            tmp_pos = randRotate(blank_pos)
+            new_pos = R + tmp_pos
             new_pos = checkDistance(new_pos, clu.get_positions(), r)
             new_mol = Atoms('CO', positions=new_pos)
+            a       = CoM(new_pos, mol.get_masses())
 
             #Make system and prep system
             system = clu + new_mol
-            fixed  = FixAtoms(indices=[x.index for x in system[:-2]])
+            fixed  = FixAtoms(indices=[x.index for x in system[:-2] if np.linalg.norm(a-x.position) < 6])
             system.set_constraint(fixed)
             calc   = MvH_CO(atoms=system)
             system.set_calculator(calc)
@@ -122,8 +123,8 @@ def fixed_clu_binding_energy(clusters, molecule, n, fmax, saveName, alpha=None):
             write(new_name, system)
 
             #Optimize geometry of new system
-            traj = new_name.replace('.xyz', '.traj')
-            opt = BFGS(system, trajectory=traj)
+            #traj = new_name.replace('.xyz', '.traj')
+            opt = BFGS(system)
             try:
                 opt.run(fmax=fmax, steps=5000)
                 assert opt.converged() == True
