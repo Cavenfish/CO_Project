@@ -49,7 +49,7 @@ def energy_dissipation(xyz, loc, nu, n, iso=[], N=500000):
     xyz    = traj.replace('.traj', '.xyz')
     traj   = Trajectory(traj)
     write(xyz, traj[-1])
-    E      = Morse_excitation(nu, n)
+    E      = Morse_energy(nu, n)
     xyz    = excite_molecule(xyz, swap, E)
     traj   = run_verletMD(xyz, n=N, i=100)
     df     = make_NVE_output(traj, traj.replace('.traj', '.csv'), 0.1)

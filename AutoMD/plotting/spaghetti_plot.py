@@ -13,7 +13,7 @@ def spaghetti_plot(csvDir, n=51, eType='Vibrational', noBkg=False):
             x  = df['Time']
             y  = savgol_filter(df[property], n, 2)
             plt.plot(x, y, color=(c/255,0,c/255))
-            c -= 1.5
+            c -= 1.1
 
             y_avg += y
 
