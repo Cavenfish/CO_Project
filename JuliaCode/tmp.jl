@@ -15,7 +15,7 @@ pbc  = InfiniteBox()
 
 M = MorseParameters(11.23, 2.3281*1.1282, 1.1282)
 d = DispersionParameters(-33.37, -10.52, -15.16)
-c = CoulombParameters(3.845, 2.132, 1.1282, false, false)
+c = CoulombParameters(3.845, 2.132, 1.1282, true, true)
 e = ExchangeParameters(361.36, 6370.10, 1516.74, 2.836, 4.253, 3.544)
 
 pot = Dict(:Morse_params      => M,

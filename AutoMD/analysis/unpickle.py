@@ -1,6 +1,6 @@
 from ..config import *
 
-def unpickle(file, low, hi):
+def unpickle(file, save, step):
     def get_rList(atoms):
         pos    = atoms.get_positions()
         masses = atoms.get_masses()
@@ -18,15 +18,15 @@ def unpickle(file, low, hi):
         return rList
 
     traj  = Trajectory(file)
-    atoms = traj[0]
-    rList = np.array(get_rList(atoms))
+    # atoms = traj[0]
+    # rList = np.array(get_rList(atoms))
+    #
+    # tmp   = atoms[(low <= rList) & (rList <= hi)]
+    # save  = file.replace('.traj', '.xyz')
+    # write(save, tmp)
 
-    tmp   = atoms[(low <= rList) & (rList <= hi)]
-    save  = file.replace('.traj', '.xyz')
-    write(save, tmp)
-
-    for frame in traj[1:]:
-        tmp = frame[(low <= rList) & (rList <= hi)]
+    for frame in traj[1::step]:
+        tmp = frame#[(low <= rList) & (rList <= hi)]
         write(save, tmp, append=True)
 
     return

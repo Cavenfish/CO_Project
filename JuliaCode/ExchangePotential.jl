@@ -49,23 +49,23 @@ function get_accelerating_function(p::ExchangeParameters, sim::NBodySimulation)
     improve =#
 
     for j in 1:N
-      
+
       if (i ==  j) || (j == bdy[i].b)
         continue
       end
 
       rj = @SVector [u[1,j], u[2,j], u[3,j]]
 
-      if     (bdy[i].s == bdy[j].s == 'C')
+      if     (bdy[i].s == bdy[j].s == "C")
         F -= V_exch(rj - ri, p.Acc, p.Bcc)
-      elseif (bdy[i].s == bdy[j].s == 'O')
+      elseif (bdy[i].s == bdy[j].s == "O")
         F -= V_exch(rj - ri, p.Aoo, p.Boo)
       else
         F -= V_exch(rj - ri, p.Aco, p.Bco)
       end
     end
 
-    dv .= F / m[i]
+    dv .+= F / m[i]
   end # Exchange acceleration
 end
 

@@ -19,7 +19,7 @@ def binding_energy(clusters, molecule, n, fmax, saveName, alpha=None):
                 v  = checkDistance(v, pos, r)
                 break
         return v
-    
+
     def get_minD(v, pos):
         x = 10000
         for p in pos:
@@ -136,8 +136,9 @@ def binding_energy(clusters, molecule, n, fmax, saveName, alpha=None):
             new_name = cluster.replace('.xyz', s)
             write(new_name, system)
 
+            traj=new_name.replace('.xyz', '.traj')
             #Optimize geometry of new system
-            opt = BFGS(system)
+            opt = BFGS(system, trajectory=traj)
             try:
                 opt.run(fmax=fmax, steps=5000)
                 assert opt.converged() == True
@@ -155,12 +156,12 @@ def binding_energy(clusters, molecule, n, fmax, saveName, alpha=None):
             #Get energy and binding energy
             ful_E = opt.atoms.get_potential_energy()
             BE    = ful_E - clu_E - mol_E
-    
+
             #Get energy contributions
             ful_cont  = np.array(calc.get_energy_contributions()[2:])
             cont      = ful_cont - clu_cont - mol_cont
             cont      = np.abs(cont) / sum(np.abs(cont)) * 100
-            
+
             #Add energy contributions to dicts
             contri['Exchange'].append(cont[0])
             contri['Dispersion'].append(cont[1])

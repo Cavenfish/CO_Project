@@ -40,28 +40,24 @@ function get_accelerating_function(p::DispersionParameters, sim::NBodySimulation
     F  = @SVector [0.0, 0.0, 0.0]
     ri = @SVector [u[1, i], u[2, i], u[3, i]]
 
-    #= The current system for avoinding double counting
-    and forcing pairwise is very ugly. This needs to
-    improve =#
-
     for j in 1:N
-	    
+
       if (i == j) || (j == bdy[i].b)
         continue
       end
 
       rj   = @SVector [u[1, j], u[2, j], u[3, j]]
 
-      if     (bdy[i].s == bdy[j].s == 'C')
+      if     (bdy[i].s == bdy[j].s == "C")
         F -= V_disp(rj - ri, p.Ccc)
-      elseif (bdy[i].s == bdy[j].s == 'O')
+      elseif (bdy[i].s == bdy[j].s == "O")
         F -= V_disp(rj - ri, p.Coo)
       else
         F -= V_disp(rj - ri, p.Cco)
       end
     end
 
-    dv  .= F / m[i]
+    dv  .+= F / m[i]
   end #Dispersion acceleration
 end
 

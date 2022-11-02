@@ -2,6 +2,7 @@ from ..config                import *
 from alphashape              import alphashape
 from trimesh.proximity       import signed_distance
 from scipy.spatial.transform import Rotation
+import gc
 
 def hit_and_stick(xyz, mol, n, saveName, fmax=1e-6, NVEtime=5, KE=0.25):
     def randVector():
@@ -91,6 +92,9 @@ def hit_and_stick(xyz, mol, n, saveName, fmax=1e-6, NVEtime=5, KE=0.25):
         #calc   = MvH_CO(atoms=system)
         #system.set_calculator(calc)
         system.set_velocities(np.zeros_like(system.get_velocities()))
+
+        #Collect garbage (might help with performace)
+        gc.collect()
 
     #Write final xyz file
     write(saveName, system)
