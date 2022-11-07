@@ -1,4 +1,5 @@
 from ..config import *
+import gc
 
 def zpe_correction(molecule, s0, s1, n, m, saveName):
 
@@ -26,6 +27,8 @@ def zpe_correction(molecule, s0, s1, n, m, saveName):
                 dic[key].append(ful - clu - mol)
             except:
                 dic[key].append(np.nan)
+            gc.collect()
+
 
     df  = pd.DataFrame(dic)
     df.to_csv(saveName)
