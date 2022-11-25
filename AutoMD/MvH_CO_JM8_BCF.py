@@ -27,17 +27,39 @@ def V_disp(r, diff, Cij):
     return E, F
 
 @njit
+def calculate_Disp(rj0i0, rj1i1, rj0i1, rj1i0):
+    Ccc = -33.37
+    Coo = -10.52
+    Cco = -15.16
+    Coc = -15.16
+
+    # C-C
+    E, Fcc  = V_disp(*rj0i0, Ccc)
+    energy  = E
+
+    # O-O
+    E, Foo  = V_disp(*rj1i1, Coo)
+    energy += E
+
+    # C-O
+    E, Fco  = V_disp(*rj0i1, Cco)
+    energy += E
+
+    # O-C
+    E, Foc  = V_disp(*rj1i0, Coc)
+    energy += E
+
+
+    return energy, Fcc, Foo, Fco, Foc
+
+@njit
 def V_exch(r, diff, Aij, Bij):
     E = Aij * exp(-Bij * r)
     F = Bij * E * diff / r
     return E, F
 
 @njit
-def calcDispEnExch(rj0i0, rj1i1, rj0i1, rj1i0):
-    Ccc = -33.37
-    Coo = -10.52
-    Cco = -15.16
-    Coc = -15.16
+def calculate_Exch(rj0i0, rj1i1, rj0i1, rj1i0):
     Acc = 361.36
     Aoo = 6370.10
     Aco = 1516.74
@@ -48,42 +70,31 @@ def calcDispEnExch(rj0i0, rj1i1, rj0i1, rj1i0):
     Boc = 3.544
 
     # C-C
-    DE, DFcc  = V_disp(*rj0i0, Ccc)
-    EE, EFcc  = V_exch(*rj0i0, Acc, Bcc)
+    E, Fcc  = V_exch(*rj0i0, Acc, Bcc)
+    energy  = E
 
     # O-O
-    Ed, DFoo  = V_disp(*rj1i1, Coo)
-    Ee, EFoo  = V_exch(*rj1i1, Aoo, Boo)
-    DE       += Ed
-    EE       += Ee
+    E, Foo  = V_exch(*rj1i1, Aoo, Boo)
+    energy += E
 
     # C-O
-    Ed, DFco  = V_disp(*rj0i1, Cco)
-    Ee, EFco  = V_exch(*rj0i1, Aco, Bco)
-    DE       += Ed
-    EE       += Ee
+    E, Fco  = V_exch(*rj0i1, Aco, Bco)
+    energy += E
 
     # O-C
-    Ed, DFoc  = V_disp(*rj1i0, Coc)
-    Ee, EFoc  = V_exch(*rj1i0, Aoc, Boc)
-    DE       += Ed
-    EE       += Ee
+    E, Foc  = V_exch(*rj1i0, Aoc, Boc)
+    energy += E
 
-    #Make return tuples
-    Disp = (DE, DFcc, DFoo, DFco, DFoc)
-    Exch = (EE, EFcc, EFoo, EFco, EFoc)
-
-    return Disp, Exch
+    return energy, Fcc, Foo, Fco, Foc
 
 @njit
-def V_coul(diff, Qij):
-    r = sqrt(dot(diff, diff))
+def V_coul(r, diff, Qij):
     E = Qij / r
     F = Qij * diff / r**3 	# = Qij / r**2 * diff / r
     return E, F
 
 @njit
-def calculate_Coul(rC1, rO1, rC2, rO2):
+def calculate_Coul(rC1, rO1, rC2, rO2, rj0i0, rj1i1, rj0i1, rj1i0, ri1i0):
 
     r0          =  1.1282
     Qc          = -1.786
@@ -95,8 +106,7 @@ def calculate_Coul(rC1, rO1, rC2, rO2):
 
     ### CO1 ###
 	# atom positions
-    rCO1 = rO1 - rC1
-    r1   = sqrt(dot(rCO1, rCO1))
+    r1, rCO1 = ri1i0
 
     # gradient of r1 with respect to rC1: - rCO1 / r1
 	# gradient of r1 with respect to rO1: rCO1 / r1
@@ -111,8 +121,7 @@ def calculate_Coul(rC1, rO1, rC2, rO2):
 
     ### CO2 ###
     # atom positions
-    rCO2 = rO2 - rC2
-    r2   = sqrt(dot(rCO2, rCO2))
+    r2, rCO2 = diffDotSqrt(rO2, rC2)
 
     # gradient of r2 with respect to rC2: - rCO2 / r2
     # gradient of r2 with respect to rO2: rCO2 / r2
@@ -128,8 +137,15 @@ def calculate_Coul(rC1, rO1, rC2, rO2):
     # for force contributions resulting from bondlength-dependent charges:
     # nabla_r Q(r) = -alpha * Q(r) * nabla_r r
 
+    # rX i/j preps
+    rX2i0 = diffDotSqrt(rX2,rC1)
+    rX2i1 = diffDotSqrt(rX2,rO1)
+    rj0X1 = diffDotSqrt(rC2,rX1)
+    rj1X1 = diffDotSqrt(rO2,rX1)
+    rX2X1 = diffDotSqrt(rX2,rX1)
+
 	# C-C
-    E, F    = V_coul(rC2-rC1, QC1*QC2)
+    E, F    = V_coul(*rj0i0, QC1*QC2)
     energy  = E
     F_Q1    = alphaC * E * rCO1 / r1
     F_Q2    = alphaC * E * rCO2 / r2
@@ -139,7 +155,7 @@ def calculate_Coul(rC1, rO1, rC2, rO2):
     Fj1     = F_Q2
 
 	# C-X
-    E, F    = V_coul(rX2-rC1, QC1*QX2)
+    E, F    = V_coul(*rX2i0, QC1*QX2)
     energy += E
     F_Q1    = alphaC * E * rCO1 / r1
     F_Q2    = - (alphaC * QC2 + alphaO * QO2) * E/QX2 * rCO2 / r2
@@ -149,7 +165,7 @@ def calculate_Coul(rC1, rO1, rC2, rO2):
     Fj1    += (wO * F) + F_Q2
 
     # C-O
-    E, F    = V_coul(rO2-rC1, QC1*QO2)
+    E, F    = V_coul(*rj1i0, QC1*QO2)
     energy += E
     F_Q1    = alphaC * E * rCO1 / r1
     F_Q2    = alphaO * E * rCO2 / r2
@@ -159,7 +175,7 @@ def calculate_Coul(rC1, rO1, rC2, rO2):
     Fj0    -= F_Q2
 
     # X-C
-    E, F    = V_coul(rC2-rX1, QX1*QC2)
+    E, F    = V_coul(*rj0X1, QX1*QC2)
     energy += E
     F_Q1    = - (alphaC * QC1 + alphaO * QO1) * E/QX1 * rCO1 / r1
     F_Q2    = alphaC * E * rCO2 / r2
@@ -169,7 +185,7 @@ def calculate_Coul(rC1, rO1, rC2, rO2):
     Fj1    += F_Q2
 
     # X-X
-    E, F    = V_coul(rX2-rX1, QX1*QX2)
+    E, F    = V_coul(*rX2X1, QX1*QX2)
     energy += E
     F_Q1    = - (alphaC * QC1 + alphaO * QO1) * E/QX1 * rCO1 / r1
     F_Q2    = - (alphaC * QC2 + alphaO * QO2) * E/QX2 * rCO2 / r2
@@ -180,7 +196,7 @@ def calculate_Coul(rC1, rO1, rC2, rO2):
 
 
     # X-O
-    E, F    = V_coul(rO2-rX1, QX1*QO2)
+    E, F    = V_coul(*rj1X1, QX1*QO2)
     energy += E
     F_Q1    = - (alphaC * QC1 + alphaO * QO1) * E/QX1 * rCO1 / r1
     F_Q2    = alphaO * E * rCO2 / r2
@@ -190,7 +206,7 @@ def calculate_Coul(rC1, rO1, rC2, rO2):
     Fj1    += (F + F_Q2)
 
     # O-C
-    E, F    = V_coul(rC2-rO1, QO1*QC2)
+    E, F    = V_coul(*rj0i1, QO1*QC2)
     energy += E
     F_Q1    = alphaO * E * rCO1 / r1
     F_Q2    = alphaC * E * rCO2 / r2
@@ -200,7 +216,7 @@ def calculate_Coul(rC1, rO1, rC2, rO2):
     Fj1    += F_Q2
 
     # O-X
-    E, F    = V_coul(rX2-rO1, QO1*QX2)
+    E, F    = V_coul(*rX2i1, QO1*QX2)
     energy += E
     F_Q1    = alphaO * E * rCO1 / r1
     F_Q2    = - (alphaC * QC2 + alphaO * QO2) * E/QX2 * rCO2 / r2
@@ -210,7 +226,7 @@ def calculate_Coul(rC1, rO1, rC2, rO2):
     Fj1    += ((wO * F) + F_Q2)
 
     # O-O
-    E, F    = V_coul(rO2-rO1, QO1*QO2)
+    E, F    = V_coul(*rj1i1, QO1*QO2)
     energy += E
     F_Q1    = alphaO * E * rCO1 / r1
     F_Q2    = alphaO * E * rCO2 / r2
@@ -253,19 +269,16 @@ def executeCalculations(positions):
             rj0i1 = diffDotSqrt(posj0, posi1)
             rj1i0 = diffDotSqrt(posj1, posi0)
 
-            #Calculate Dispersion and Exchange
-            disp, exch            = calcDispEnExch(rj0i0, rj1i1, rj0i1, rj1i0)
-
-            #Store Dispersion
-            E, Fcc, Foo, Fco, Foc = disp
+            #Calculate Dispersion
+            E, Fcc, Foo, Fco, Foc = calculate_Disp(rj0i0, rj1i1, rj0i1, rj1i0)
             DispE                += E
             DispF[2*i]           -= (Fcc + Foc)
             DispF[2*i+1]         -= (Foo + Fco)
             DispF[2*j]           += (Fcc + Fco)
             DispF[2*j+1]         += (Foo + Foc)
 
-            #Store Exchange
-            E, Fcc, Foo, Fco, Foc = exch
+            #Calculate Exchange
+            E, Fcc, Foo, Fco, Foc = calculate_Exch(rj0i0, rj1i1, rj0i1, rj1i0)
             ExchE                += E
             ExchF[2*i]           -= (Fcc + Foc)
             ExchF[2*i+1]         -= (Foo + Fco)
@@ -273,7 +286,9 @@ def executeCalculations(positions):
             ExchF[2*j+1]         += (Foo + Foc)
 
             #Calculate Coulomb
-            E, Fi0, Fi1, Fj0, Fj1 = calculate_Coul(posi0, posi1, posj0, posj1)
+            E, Fi0, Fi1, Fj0, Fj1 = calculate_Coul(posi0, posi1, posj0, posj1,
+                                                   rj0i0, rj1i1, rj0i1, rj1i0,
+                                                   ri1i0)
             CoulE                += E
             CoulF[2*i]           += Fi0
             CoulF[2*i+1]         += Fi1
