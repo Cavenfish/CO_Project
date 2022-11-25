@@ -7,7 +7,7 @@ from scipy.constants import c
 from ase.io import read, write
 from ase import units, Atoms
 from ase.optimize import BFGS, FIRE, GPMin, MDMin
-from .MvH_CO_JM8_Numba import MvH_CO
+from .MvH_CO_JM8_BCF import MvH_CO
 from ase.visualize import view
 from ase.vibrations import Vibrations
 from ase.md.verlet import VelocityVerlet
