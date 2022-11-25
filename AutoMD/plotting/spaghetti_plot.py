@@ -27,6 +27,5 @@ def spaghetti_plot(csvDir, n=51, eType='Vibrational', noBkg=False):
         plt.close()
         return
 
-    loop( 'Total Energy', 'spaghetti_plot.png')
-    loop('Sliced Energy', 'spaghetti_plot_sliced.png')
+    loop('Sliced Energy', 'spaghetti_plot.png')
     return

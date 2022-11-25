@@ -2,7 +2,7 @@ from ..config import *
 
 def surf_vs_subsurf(root, noBkg=False, errBar=False):
     def get_avg(csvDir):
-        keys = ['Time', 'Total Energy', 'Sliced Energy']
+        keys = ['Time', 'Sliced Energy']
         tmp  = {}
         N    = 0
         for fname in os.listdir(csvDir):
@@ -23,7 +23,7 @@ def surf_vs_subsurf(root, noBkg=False, errBar=False):
         return avg
 
     def get_std(csvDir, avg):
-        keys = ['Total Energy', 'Sliced Energy']
+        keys = ['Sliced Energy']
         tmp  = {}
         N    = 0
         for fname in os.listdir(csvDir):
@@ -82,6 +82,5 @@ def surf_vs_subsurf(root, noBkg=False, errBar=False):
             plt.close()
         return
 
-    plot('surfVsSub.png', 'Total Energy')
-    plot('surfVsSub_sliced.png', 'Sliced Energy')
+    plot('surfVsSub.png', 'Sliced Energy')
     return

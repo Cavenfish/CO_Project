@@ -2,7 +2,7 @@ from ..config import *
 
 def half_life(csvDir, n=51, eType='Vibrational'):
     def get_avg():
-        keys = ['Time', 'Total Energy', 'Sliced Energy']
+        keys = ['Time', 'Sliced Energy']
         tmp  = {}
         N    = 0
         for fname in os.listdir(csvDir):
@@ -81,7 +81,6 @@ def half_life(csvDir, n=51, eType='Vibrational'):
         return
 
     avg = get_avg()
-    plot(avg,  'HF_total.png',  'Total Energy')
-    plot(avg, 'HF_sliced.png', 'Sliced Energy')
+    plot(avg, 'HF.png', 'Sliced Energy')
 
     return

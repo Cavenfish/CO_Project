@@ -3,7 +3,7 @@ from operator import itemgetter
 
 def all_isotopes_dissipation(root, noBkg=False):
     def get_avg(csvDir):
-        keys = ['Time', 'Total Energy', 'Sliced Energy']
+        keys = ['Time', 'Sliced Energy']
         tmp  = {}
         N    = 0
         for fname in os.listdir(csvDir):
@@ -24,7 +24,7 @@ def all_isotopes_dissipation(root, noBkg=False):
         return avg
 
     def get_std(csvDir, avg):
-        keys = ['Total Energy', 'Sliced Energy']
+        keys = ['Sliced Energy']
         tmp  = {}
         N    = 0
         for fname in os.listdir(csvDir):
@@ -84,6 +84,5 @@ def all_isotopes_dissipation(root, noBkg=False):
         plt.close()
         return
 
-    plot('all_dissipation.png', 'Total Energy')
-    plot('all_dissipation_sliced.png', 'Sliced Energy')
+    plot('all_dissipation.png', 'Sliced Energy')
     return

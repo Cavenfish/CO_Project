@@ -1,6 +1,7 @@
 import sys, time, os
 import numpy as np
 import pandas as pd
+from numba import njit
 import matplotlib.pyplot as plt
 from scipy.constants import c
 from ase.io import read, write
@@ -27,10 +28,9 @@ def prep_system(xyz):
     system.set_calculator(calc)
     return system, calc
 
+@njit
 def CoM(pos, masses):
-    if not isinstance(pos, np.ndarray):
-        pos = np.array(pos)
-
+    #pos = np.array(pos)
     M   = sum(masses)
     xcm = sum(masses * pos[:,0])/M
     ycm = sum(masses * pos[:,1])/M
@@ -414,29 +414,24 @@ def get_system_properties(system, calc, i, f):
     return
 
 def track_dissipation(system, calc):
-    #Get potential energy of molecule
-    try:
-        E_pot   = system.calc.results['energies'][0]
-    except:
-        E_pot   = 0
 
     #Get kinetic energy of molecule
-    momenta = system.arrays['momenta']
-    masses  = system.arrays['masses' ]
-    E_kin_a = (np.dot(momenta[0], momenta[0])) / (2 * masses[0])
-    E_kin_b = (np.dot(momenta[1], momenta[1])) / (2 * masses[1])
-    E_kin   = E_kin_a + E_kin_b
-
-    #Sum up total molecular energy
-    E_tot   = E_kin + E_pot
+    # momenta = system.arrays['momenta']
+    # masses  = system.arrays['masses' ]
+    # E_kin_a = (np.dot(momenta[0], momenta[0])) / (2 * masses[0])
+    # E_kin_b = (np.dot(momenta[1], momenta[1])) / (2 * masses[1])
+    # E_kin   = E_kin_a + E_kin_b
 
     #Get total energy for sliced system
     part  = system[0:2]
     part.set_calculator(MvH_CO(atoms=part))
-    E_sli = part.get_potential_energy() + part.get_kinetic_energy()
+    E_pot = part.get_potential_energy()
+    E_kin = part.get_kinetic_energy()
+    E_sli = E_pot + E_kin
 
     #Get kinetic energy contributions of excited molecule
     pos      = system.arrays['positions']
+    masses   = system.arrays['masses' ]
     velocs   = system.get_velocities()
     one_vib  = calc_Evib(pos[0:2], masses[0:2], velocs[0:2])
     one_rot  = calc_Erot(pos[0:2], masses[0:2], velocs[0:2])
@@ -444,23 +439,22 @@ def track_dissipation(system, calc):
 
     #Get kinetic energy contributions of all other molecules
     N = len(pos) // 2
-    all_vib  = []
-    all_rot  = []
-    all_tran = []
+    avg_vib  = 0.0
+    avg_rot  = 0.0
+    avg_tran = 0.0
     for i in range(1, N):
         a = i*2
         b = a+2
-        all_vib.append(calc_Evib(pos[a:b], masses[a:b], velocs[a:b]))
-        all_rot.append(calc_Erot(pos[a:b], masses[a:b], velocs[a:b]))
-        all_tran.append(calc_Etran(pos[a:b], masses[a:b], velocs[a:b]))
-    avg_vib  = sum(all_vib)  / (N-1)
-    avg_rot  = sum(all_rot)  / (N-1)
-    avg_tran = sum(all_tran) / (N-1)
+        avg_vib  += calc_Evib(pos[a:b], masses[a:b], velocs[a:b])
+        avg_rot  += calc_Erot(pos[a:b], masses[a:b], velocs[a:b])
+        avg_tran += calc_Etran(pos[a:b], masses[a:b], velocs[a:b])
+    avg_vib  /= (N-1)
+    avg_rot  /= (N-1)
+    avg_tran /= (N-1)
 
-    return_this = [E_sli, E_pot, E_kin, E_tot,
+    return_this = [E_sli, E_pot, E_kin,
                    avg_tran, avg_rot, avg_vib,
-                   one_tran, one_rot, one_vib,
-                   all_tran, all_rot, all_vib]
+                   one_tran, one_rot, one_vib]
     return return_this
 
 def make_NVT_output(logFile, csvFile):
@@ -500,16 +494,12 @@ def make_NVE_output(trajFile, csvFile, ts, mask=False):
                'Sliced Energy': [],
             'Potential Energy': [],
               'Kinetic Energy': [],
-                'Total Energy': [],
             'Avg Trans Energy': [],
             'Avg Rotat Energy': [],
             'Avg Vibra Energy': [],
             'One Trans Energy': [],
             'One Rotat Energy': [],
-            'One Vibra Energy': [],
-            'All Trans Energy': [],
-            'All Rotat Energy': [],
-            'All Vibra Energy': []}
+            'One Vibra Energy': []}
 
     #Loop through trajectory, writting to output file
     for i in range(len(traj)):
@@ -523,16 +513,12 @@ def make_NVE_output(trajFile, csvFile, ts, mask=False):
         temp['Sliced Energy'].append(data[0])
         temp['Potential Energy'].append(data[1])
         temp['Kinetic Energy'].append(data[2])
-        temp['Total Energy'].append(data[3])
-        temp['Avg Trans Energy'].append(data[4])
-        temp['Avg Rotat Energy'].append(data[5])
-        temp['Avg Vibra Energy'].append(data[6])
-        temp['One Trans Energy'].append(data[7])
-        temp['One Rotat Energy'].append(data[8])
-        temp['One Vibra Energy'].append(data[9])
-        temp['All Trans Energy'].append(data[10])
-        temp['All Rotat Energy'].append(data[11])
-        temp['All Vibra Energy'].append(data[12])
+        temp['Avg Trans Energy'].append(data[3])
+        temp['Avg Rotat Energy'].append(data[4])
+        temp['Avg Vibra Energy'].append(data[5])
+        temp['One Trans Energy'].append(data[6])
+        temp['One Rotat Energy'].append(data[7])
+        temp['One Vibra Energy'].append(data[8])
 
     #Make DataFrame
     df = pd.DataFrame(temp)
@@ -544,6 +530,7 @@ def make_NVE_output(trajFile, csvFile, ts, mask=False):
     #If not, the call can ignore the return
     return df
 
+@njit
 def calc_Evib(pos, masses, velocs):
     #Calculate kinetic energy terms
     d     = pos[0] - pos[1]
@@ -557,6 +544,7 @@ def calc_Evib(pos, masses, velocs):
     E_vib = a + b
     return E_vib
 
+@njit
 def calc_Erot(pos, masses, velocs):
     vCoM  = (masses[0]*velocs[0] + masses[1]*velocs[1]) / sum(masses)
     com   = CoM(pos, masses)
@@ -571,6 +559,7 @@ def calc_Erot(pos, masses, velocs):
         E_rot += 0.5 * I * np.dot(w, w)
     return E_rot
 
+@njit
 def calc_Etran(pos, masses, velocs):
     mu     = (masses[0] * masses[1]) / sum(masses)
     vCoM   = (masses[0]*velocs[0] + masses[1]*velocs[1]) / sum(masses)

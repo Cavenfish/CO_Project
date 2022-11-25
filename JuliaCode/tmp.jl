@@ -10,8 +10,12 @@ using StaticArrays
 using Unitful
 using UnitfulAtomic
 
-bdys = read_ase_xyz("10co.xyz")
+# Time to beat for 100fs run => 33seconds 
+
+@time begin
+bdys = read_ase_xyz("250co0.xyz")
 pbc  = InfiniteBox()
+end
 
 M = MorseParameters(11.23, 2.3281*1.1282, 1.1282)
 d = DispersionParameters(-33.37, -10.52, -15.16)
@@ -25,10 +29,13 @@ pot = Dict(:Morse_params      => M,
 
 sys = PotentialNBodySystem(bdys, pot)
 
-τ   = uconvert(u"Ang*u^0.5*eV^-0.5", 1e-1u"fs")
+τ   = uconvert(u"Ang*u^0.5*eV^-0.5", 1u"fs")
 τ   = ustrip(τ)
-sim = NBodySimulation(sys, (0.0τ, 1e4τ)) 
+sim = NBodySimulation(sys, (0.0τ, 1e2τ)) 
+@time begin
 sr  = run_simulation(sim, VelocityVerlet(), dt=τ)
+end
 #NBodySimulator.save_to_pdb(sr, "test.pdb")
-
+@time begin
 write_xyz_traj("test.xyz", sr, 10)
+end

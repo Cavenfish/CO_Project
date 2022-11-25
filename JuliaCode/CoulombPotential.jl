@@ -26,20 +26,19 @@ function get_accelerating_function(p::CoulombParameters, sim::NBodySimulation)
   #      t  = time
   #      i  = particle number
 
-  function FQ(ri, rj, qi, qj, α)
+  function FQ(ri, rj, qi, qj, α, v)
     d = rj - ri
     r = √(d'd)
     E = qi * qj / r
-    F = α * E * d / r
+    F = α * E * v
     return F
   end
 
-  function FQX(ri, rj, qi, qj, αi, αj, X)
+  function FQX(ri, rj, qi, qj, c, qx, v)
     d = rj - ri
     r = √(d'd)
     E = qi * qj / r
-    c = - (αi * qi + αj * qj)
-    F = c * E / X * d / r
+    F = c * E / qx * v
     return F
   end
 
@@ -97,19 +96,22 @@ function get_accelerating_function(p::CoulombParameters, sim::NBodySimulation)
       end
 
       if p.FQ
-        
+        #FQ(ri, rj, qi, qj, α, v)
+        #FQX(ri, rj, qi, qj, c, qx, v)
+        R = rib - ri
+        v = R / di
+        c = - (Q[bdy[i].s] * qi + Q[bdy[ib].s] * qib)
 
-        Ri = rib - ri
-        E0 = E_coul(rj - ri, qi * qj)
-        E1 = E_coul(rXj -  ri, qXj *  qi) * 0.5
-        E2 = E_coul(rj - rXi,  qj * qXi)
-        E3 = E_coul(rXj - rXi, qXj * qXi) * 0.5
-        c  = Q[bdy[i].s] * qi + Q[bdy[ib].s] * qib
+        F -= FQ(ri, rj, qi, qj, Q[bdy[i].s], v)
+        F -= FQ(ri, rXj, qi, qXj, Q[bdy[i].s], v) * 0.5
+        F -= FQ(ri, rjb, qi, qjb, Q[bdy[i].s], v)
+        F -= FQ(rib, rj, qib, qj, Q[bdy[ib].s], v)
+        F -= FQ(rib, rXj, qib, qXj, Q[bdy[ib].s], v) * 0.5
+        F -= FQ(rib, rjb, qib, qjb, Q[bdy[ib].s], v)
 
-        F -= Q[bdy[i].s] * E0 * Ri / di
-        F -= Q[bdy[i].s] * E1 * Ri / di
-        F += c * E2 / qXi * Ri / di
-        F += c * E3 / qXi * Ri / di
+        F -= FQX(rXi, rj, qXi, qj, c, qXi, v)
+        F -= FQX(rXi, rXj, qXi, qXj, c, qXi, v) * 0.5
+        F -= FQX(rXi, rjb, qXi, qjb, c, qXi, v)
       end
     end
 

@@ -2,7 +2,7 @@ from ..config import *
 
 def all_nu_dissipation(root, noBkg=False):
     def get_avg(csvDir):
-        keys = ['Time', 'Total Energy', 'Sliced Energy']
+        keys = ['Time', 'Sliced Energy']
         tmp  = {}
         N    = 0
         for fname in os.listdir(csvDir):
@@ -23,7 +23,7 @@ def all_nu_dissipation(root, noBkg=False):
         return avg
 
     def get_std(csvDir, avg):
-        keys = ['Total Energy', 'Sliced Energy']
+        keys = ['Sliced Energy']
         tmp  = {}
         N    = 0
         for fname in os.listdir(csvDir):
@@ -94,6 +94,5 @@ def all_nu_dissipation(root, noBkg=False):
             plt.close()
         return
 
-    plot('allNu.png', 'Total Energy')
-    plot('allNu_sliced.png', 'Sliced Energy')
+    plot('allNu.png', 'Sliced Energy')
     return
