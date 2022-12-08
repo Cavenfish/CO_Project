@@ -9,9 +9,9 @@ from numba import njit
 
 @njit
 def calculate_Morse(r, diff):
-    epsilon = 11.23
-    rho0    = 2.3281*1.1282
-    r0      = 1.1282
+    epsilon = 11.230139012256362
+    rho0    = 2.626624
+    r0      = 1.1282058129221093
     preF    = 2 * epsilon * rho0 / r0
     expf    = exp(rho0 * (1.0 - r / r0))
     energy  = epsilon * expf * (expf - 2)
@@ -28,10 +28,10 @@ def V_disp(r, diff, Cij):
 
 @njit
 def calculate_Disp(rj0i0, rj1i1, rj0i1, rj1i0):
-    Ccc = -33.37
-    Coo = -10.52
-    Cco = -15.16
-    Coc = -15.16
+    Ccc = -33.44955570065988
+    Coo = -10.546349734130885
+    Cco = -15.189133724736946
+    Coc = -15.189133724736946
 
     # C-C
     E, Fcc  = V_disp(*rj0i0, Ccc)
@@ -60,14 +60,14 @@ def V_exch(r, diff, Aij, Bij):
 
 @njit
 def calculate_Exch(rj0i0, rj1i1, rj0i1, rj1i0):
-    Acc = 361.36
-    Aoo = 6370.10
-    Aco = 1516.74
-    Aoc = 1516.74
-    Bcc = 2.836
-    Boo = 4.253
-    Bco = 3.544
-    Boc = 3.544
+    Acc = 361.367206403597
+    Aoo = 6370.185468304371
+    Aco = 1516.76265699823
+    Aoc = 1516.76265699823
+    Bcc = 2.8345891887553925
+    Boo = 4.2518837831330885
+    Bco = 3.5432364859442407
+    Boc = 3.5432364859442407
 
     # C-C
     E, Fcc  = V_exch(*rj0i0, Acc, Bcc)
@@ -96,11 +96,11 @@ def V_coul(r, diff, Qij):
 @njit
 def calculate_Coul(rC1, rO1, rC2, rO2, rj0i0, rj1i1, rj0i1, rj1i0, ri1i0):
 
-    r0          =  1.1282
-    Qc          = -1.786
-    Qo          = -2.332
-    alphaC      =  3.845
-    alphaO      =  2.132
+    r0          =  1.1282058129221093
+    Qc          = -1.7835026375774934
+    Qo          = -2.333732174702465
+    alphaC      =  3.843702939952312
+    alphaO      =  2.131611069944055
     wO          =  0.57135
     wC          =  0.42865
 
@@ -245,9 +245,10 @@ def diffDotSqrt(v2, v1):
 
 @njit(parallel=False)
 def executeCalculations(positions):
-    N      = len(positions)
-    MorseF = ExchF = DispF = CoulF = zeros_like(positions)
-    MorseE = ExchE = DispE = CoulE = 0.0
+    epsilon = 11.230139012256362
+    N       = len(positions)
+    MorseF  = ExchF = DispF = CoulF = zeros_like(positions)
+    MorseE  = ExchE = DispE = CoulE = 0.0
 
     for i in range(0, N//2, 1):
         posi0 = positions[2*i]
@@ -298,7 +299,7 @@ def executeCalculations(positions):
     # In order to normalize the minimal morse potential to zero,
     # the following energy will be added to change the zero point
     # of all intramolecular interactions.
-    MorseE += 11.230 * N / 2.0
+    MorseE += epsilon * N / 2.0
 
     Morse = (MorseE, MorseF)
     Exch  = ( ExchE,  ExchF)
