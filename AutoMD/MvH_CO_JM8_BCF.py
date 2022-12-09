@@ -247,7 +247,10 @@ def diffDotSqrt(v2, v1):
 def executeCalculations(positions):
     epsilon = 11.230139012256362
     N       = len(positions)
-    MorseF  = ExchF = DispF = CoulF = zeros_like(positions)
+    MorseF  = zeros_like(positions) 
+    ExchF   = zeros_like(positions)
+    DispF   = zeros_like(positions)
+    CoulF   = zeros_like(positions)
     MorseE  = ExchE = DispE = CoulE = 0.0
 
     for i in range(0, N//2, 1):
@@ -327,6 +330,7 @@ class MvH_CO(Calculator):
     """
 
     implemented_properties = ['energy', 'forces']
+    nolabel                = True
 
     def __init__(self, **kwargs):
         Calculator.__init__(self, **kwargs)
