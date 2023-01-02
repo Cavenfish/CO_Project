@@ -31,10 +31,10 @@ def prep_system(xyz):
 @njit
 def CoM(pos, masses):
     #pos = np.array(pos)
-    M   = sum(masses)
-    xcm = sum(masses * pos[:,0])/M
-    ycm = sum(masses * pos[:,1])/M
-    zcm = sum(masses * pos[:,2])/M
+    M   = np.sum(masses)
+    xcm = np.sum(masses * pos[:,0])/M
+    ycm = np.sum(masses * pos[:,1])/M
+    zcm = np.sum(masses * pos[:,2])/M
 
     return np.array([xcm,ycm,zcm])
 
@@ -546,7 +546,8 @@ def calc_Evib(pos, masses, velocs):
 
 @njit
 def calc_Erot(pos, masses, velocs):
-    vCoM  = (masses[0]*velocs[0] + masses[1]*velocs[1]) / sum(masses)
+    M     = np.sum(masses)
+    vCoM  = (masses[0]*velocs[0] + masses[1]*velocs[1]) / M
     com   = CoM(pos, masses)
     E_rot = 0
     for i in range(len(masses)):
@@ -561,8 +562,9 @@ def calc_Erot(pos, masses, velocs):
 
 @njit
 def calc_Etran(pos, masses, velocs):
-    mu     = (masses[0] * masses[1]) / sum(masses)
-    vCoM   = (masses[0]*velocs[0] + masses[1]*velocs[1]) / sum(masses)
+    M      = np.sum(masses)
+    mu     = (masses[0] * masses[1]) / M
+    vCoM   = (masses[0]*velocs[0] + masses[1]*velocs[1]) / M
     E_tran = 0.5 * mu * np.dot(vCoM, vCoM)
     return E_tran
 
