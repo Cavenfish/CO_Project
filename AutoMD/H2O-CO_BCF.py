@@ -26,5 +26,7 @@ def V_coul(r, diff, Qij):
 @njit
 def V_LJ(r, diff, sigma, epsilon):
     E = 4 * epsilon * ( (sigma/r)**12 - (sigma/r)**6 )
-    F = 
+    c = (4 * epsilon * sigma) / r**3
+    k = 12 * (sigma/r)**11 - 6 * (sigma/r)**5
+    F = c * k * diff
     return E, F
