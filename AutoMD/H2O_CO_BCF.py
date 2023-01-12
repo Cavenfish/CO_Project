@@ -1,3 +1,4 @@
+from os    import path
 from yaml  import load
 from numba import njit
 from numpy import exp, sqrt, dot, zeros_like
@@ -14,7 +15,7 @@ def calculate_Morse(r, diff, D, r0, beta):
 @njit
 def V_HOH(K, theta, theta0):
     E = 0.5 * K * (theta - theta0)**2
-    F =
+    F = 0
     return E, F
 
 @njit
@@ -50,7 +51,8 @@ class H2O_CO(Calculator):
     nolabel                = True
     
     #Load FF params
-    with open('ff_params.yaml', 'r') as f:
+    fname = path.dirname(__file__) + '/ff_params.yaml'
+    with open(fname, 'r') as f:
         params = load(f)
 
     def __init__(self, **kwargs):
