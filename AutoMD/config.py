@@ -131,7 +131,8 @@ def excite_molecule(xyz, swap, E, many_excite=''):
     #Get pos from system
     system, _ = prep_system(xyz)
     pos       = system.get_positions()[swap]
-    momenta   = system.arrays['momenta'][swap]
+    #momenta   = system.arrays['momenta'][swap]
+    momenta   = system.get_momenta()[swap]
     masses    = system.get_masses()[swap]
 
     #Define parameters
@@ -289,7 +290,8 @@ def add_isotope(xyz, swap, masses):
 
     #Get atom positions
     pos       = system.get_positions()[swap]
-    momenta   = system.arrays['momenta'][swap]
+    #momenta   = system.arrays['momenta'][swap]
+    momenta   = system.get_momenta()[swap]
 
     #Make new atoms but with isotopic masses
     new_atoms = Atoms('CO', positions=pos, masses=masses, momenta=momenta)
