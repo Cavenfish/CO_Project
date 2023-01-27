@@ -8,7 +8,7 @@ from ase.io import read, write
 from ase import units, Atoms
 from ase.optimize import BFGS, FIRE, GPMin, MDMin
 from .MvH_CO_JM8_BCF import MvH_CO
-from .H2O_CO_BCF import H2O_CO
+#from .H2O_CO_BCF import H2O_CO
 from ase.visualize import view
 from ase.vibrations import Vibrations
 from ase.md.verlet import VelocityVerlet
@@ -537,14 +537,24 @@ def make_NVE_output(trajFile, csvFile, ts, mask=False):
 def calc_Evib(pos, masses, velocs):
     #Calculate kinetic energy terms
     d     = pos[0] - pos[1]
-    ed    = d / np.linalg.norm(d)
+    r     = np.linalg.norm(d)
+    ed    = d / r
     vd0   = np.dot(ed, velocs[0])
     vd1   = np.dot(ed, velocs[1])
     a     = 0.5 * masses[0] * vd0**2
     b     = 0.5 * masses[1] * vd1**2
 
+    #Calculate potential energy
+    epsilon = 11.230139012256362
+    rho0    = 2.626624
+    r0      = 1.1282058129221093
+    preF    = 2 * epsilon * rho0 / r0
+    expf    = np.exp(rho0 * (1.0 - r / r0))
+    Epot    = epsilon * expf * (expf - 2)
+    Epot   += epsilon # This normalizes the potential
+
     #Sum it all up
-    E_vib = a + b
+    E_vib = a + b + Epot
     return E_vib
 
 @njit
