@@ -10,7 +10,7 @@ from numba import njit
 @njit
 def calculate_Morse(r, diff):
     epsilon = 11.230139012256362
-    rho0    = 2.626624
+    rho0    = 2.626624 # 2.3281*1.1282
     r0      = 1.1282058129221093
     preF    = 2 * epsilon * rho0 / r0
     expf    = exp(rho0 * (1.0 - r / r0))

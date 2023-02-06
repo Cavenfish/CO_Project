@@ -5,6 +5,7 @@ def spaghetti_plot(csvDir, n=51, eType='Vibrational', noBkg=False):
         N     = len(os.listdir(csvDir))
         y_avg = 0
         c     = 255
+        k     = 220 / N
         for fname in os.listdir(csvDir):
             if '.csv' not in fname:
                 N -= 1
@@ -13,7 +14,7 @@ def spaghetti_plot(csvDir, n=51, eType='Vibrational', noBkg=False):
             x  = df['Time']
             y  = savgol_filter(df[property], n, 2)
             plt.plot(x, y, color=(c/255,0,c/255))
-            c -= 1.1
+            c -= k
 
             y_avg += y
 

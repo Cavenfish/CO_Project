@@ -5,6 +5,7 @@ from numpy import exp, sqrt, dot, zeros_like, where
 
 @njit
 def calculate_Morse(r, diff, D, r0, beta):
+    #TODO: Correct math for beta to be beta not rho0 from jorg
     preF = 2 * D * beta / r0
     expf = exp(beta * (r - r0))
     E    = D * (1 - 2*expf + expf**2)
