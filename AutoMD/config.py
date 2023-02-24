@@ -280,7 +280,7 @@ def calc_vibs(xyz):
     vib.run()
     vib.summary(log=xyz.replace('.xyz', '_vib.out'))
     vib.write_dos(xyz.replace('.xyz', '_vibDOS.out'))
-    vib.write_jmol()
+    #vib.write_jmol()
     vib.clean()
     return
 

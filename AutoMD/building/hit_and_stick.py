@@ -1,10 +1,9 @@
+import gc, sys
 from ..config                import *
-from alphashape              import alphashape
-from trimesh.proximity       import signed_distance
 from scipy.spatial.transform import Rotation
-import gc
+from yaml                    import safe_load
 
-def hit_and_stick(xyz, mol, n, saveName, fmax=1e-6, NVEtime=5, KE=0.25):
+def hit_and_stick(inp):
     def randVector():
         R     = 1
         theta = np.random.uniform(0, 1) * np.pi
@@ -32,19 +31,40 @@ def hit_and_stick(xyz, mol, n, saveName, fmax=1e-6, NVEtime=5, KE=0.25):
                 break
         return v
 
+    def convertUnits(KE):
+        E = float(KE.split('_')[0])
+        u = KE.split('_')[1]
 
-    system, _ = prep_system(xyz)
-    molec,  _ = prep_system(mol)
+        if u == 'K':
+            return E * 8.6173e-5
+        elif u == 'kJ':
+            return E * 6.2415e21
+        elif u == 'eV':
+            return E
+        else:
+            sys.exit(f'Wrong Energy Units\n{u} is not allowed')
+
+    #Read in input card
+    with open(inp, 'r') as f:
+        p = safe_load(f)
+
+    #Initialize system 
+    n         = p['size'] - 1
+    system    = read(p['xyz'])
+    molec     = read(p['mol'])
     blank_pos = molec.get_positions()
-    trajName  = xyz.replace('.xyz', '.traj')
+    coMass    = molec.get_masses()
 
+    #Make blank traj file 
+    if 'trajName' in p:
+        with open(p['trajName'], 'w') as f:
+            pass
+
+    #Run hit and stick
     for i in range(n):
         pos = system.get_positions()
         mas = system.get_masses()
         com = CoM(pos, mas)
-
-        #Get alpha shape
-        a = alphashape(pos)
 
         #Get random unit vector
         r = randVector()
@@ -56,46 +76,55 @@ def hit_and_stick(xyz, mol, n, saveName, fmax=1e-6, NVEtime=5, KE=0.25):
         new_pos = R + tmp_pos
         new_pos = checkDistance(new_pos, pos, e)
     
-        #Get rho
+        #Get rho unit vector
         diff    = com - CoM(new_pos, mas[:2])
         e       = diff / np.linalg.norm(diff)
-        p       = KE * e
+        
+        #Get KE in eV
+        KE = convertUnits(p['NVE']['KE'])
+        
+        #Make rho
+        mv   = np.sqrt(KE * 2 * coMass)
+        rho0 = mv[0] * e
+        rho1 = mv[1] * e
 
-        new_rho = [p, p]
+        #Prep incoming molecule 
+        new_rho = [rho0, rho1]
         new_mol = Atoms('CO', positions=new_pos, momenta=new_rho)
 
         #Make system
         system += new_mol
-
-        #Run NVE
-        dyn  = VelocityVerlet(system, 1 * units.fs)
-        if i == 0:
-            traj = Trajectory(trajName, 'w', system)
-        else:
-            traj = Trajectory(trajName, 'a', system)
-        dyn.attach(traj.write, interval=1)
-        dyn.run(NVEtime * 1000)
-
-        #Get last frame of simulation
-        traj   = Trajectory(trajName)
-        system = traj[-1]
-        calc   = MvH_CO(atoms=system)
+        calc    = MvH_CO(atoms=system)
         system.set_calculator(calc)
 
-        #Run geometry optimization
-        #traj = Trajectory(trajName, 'a', system)
-        opt  = BFGS(system)#, trajectory=traj)
-        opt.run(fmax=fmax)
+        #Prep trajectory file
+        if 'trajName' in p:
+            traj = Trajectory(p['trajName'], 'a', system)
 
-        #Get last frame of simulation
-        #system = opt
-        #calc   = MvH_CO(atoms=system)
-        #system.set_calculator(calc)
-        system.set_velocities(np.zeros_like(system.get_velocities()))
+        #Run NVE
+        if 'NVE' in p:
+            dyn = VelocityVerlet(system, 1 * units.fs)
+            if 'trajName' in p: dyn.attach(traj.write, interval=10)
+            dyn.run(p['NVE']['time'] * 1000)
+
+        #Run Geo Opt
+        if 'OPT' in p:
+            fmax = float(p['OPT']['fmax']) 
+            opt  = BFGS(system)
+            if 'trajName' in p: opt.attach(traj.write, interval=10)
+            opt.run(fmax=fmax)
+
+        #Run NVT
+        if 'NVT' in p:
+            T   = p['NVT']['T']
+            mu  = p['NVT']['mu']
+            dyn = Langevin(system, 1 * units.fs, friction=mu, temperature_K=T)
+            if 'trajName' in p: dyn.attach(traj.write, interval=10)
+            dyn.run(p['NVT']['time'] * 1000)
 
         #Collect garbage (might help with performace)
         gc.collect()
 
     #Write final xyz file
-    write(saveName, system)
+    write(p['saveName'], system)
     return

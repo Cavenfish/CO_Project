@@ -2,10 +2,8 @@ import os
 os.environ["OMP_NUM_THREADS"] = '1'
 os.environ["NUMBA_NUM_THREADS"] = '1'
 
-
 from numpy import exp, sqrt, dot, zeros_like
 from numba import njit
-
 
 @njit
 def calculate_Morse(r, diff):
