@@ -57,7 +57,7 @@ def hit_and_stick(inp):
 
     #Make blank traj file 
     if 'trajName' in p:
-        interval = 
+        interval = p['trajInter']
         with open(p['trajName'], 'w') as f:
             pass
 
