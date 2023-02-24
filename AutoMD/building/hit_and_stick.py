@@ -57,6 +57,7 @@ def hit_and_stick(inp):
 
     #Make blank traj file 
     if 'trajName' in p:
+        interval = 
         with open(p['trajName'], 'w') as f:
             pass
 
@@ -104,14 +105,14 @@ def hit_and_stick(inp):
         #Run NVE
         if 'NVE' in p:
             dyn = VelocityVerlet(system, 1 * units.fs)
-            if 'trajName' in p: dyn.attach(traj.write, interval=10)
+            if 'trajName' in p: dyn.attach(traj.write, interval=interval)
             dyn.run(p['NVE']['time'] * 1000)
 
         #Run Geo Opt
         if 'OPT' in p:
             fmax = float(p['OPT']['fmax']) 
             opt  = BFGS(system)
-            if 'trajName' in p: opt.attach(traj.write, interval=10)
+            if 'trajName' in p: opt.attach(traj.write, interval=interval)
             opt.run(fmax=fmax)
 
         #Run NVT
@@ -119,7 +120,7 @@ def hit_and_stick(inp):
             T   = p['NVT']['T']
             mu  = p['NVT']['mu']
             dyn = Langevin(system, 1 * units.fs, friction=mu, temperature_K=T)
-            if 'trajName' in p: dyn.attach(traj.write, interval=10)
+            if 'trajName' in p: dyn.attach(traj.write, interval=interval)
             dyn.run(p['NVT']['time'] * 1000)
 
         #Collect garbage (might help with performace)
