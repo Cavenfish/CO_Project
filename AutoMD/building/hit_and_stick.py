@@ -45,8 +45,13 @@ def hit_and_stick(inp):
             sys.exit(f'Wrong Energy Units\n{u} is not allowed')
 
     #Read in input card
-    with open(inp, 'r') as f:
-        p = safe_load(f)
+    if isinstance(inp, str):
+        with open(inp, 'r') as f:
+            p = safe_load(f)
+    elif isinstance(inp, dict):
+        p = inp
+    else:
+        sys.exit('Input not accepted')
 
     #Initialize system 
     n         = p['size'] - 1

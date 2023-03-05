@@ -356,6 +356,24 @@ def run_verletMD(xyz, n=50000, i=100, ts=1):
 
     return trajname
 
+def continueNVE(traj, n=750000, i=100, ts=1):
+    tj = Trajectory(traj)
+    a  = tj[-1]
+    c  = MvH_CO(atoms=a)
+    a.set_calculator(c)
+
+    tj = Trajectory(traj, 'a', a)
+    md = VelocityVerlet(a, ts * units.fs)
+    
+    #Traj writer automatically writes step 0
+    #so to avoid having two identical steps we
+    #first run a single interval then attach the
+    #traj writer and run the rest
+    md.run(i-1)
+    md.attach(tj.write, interval=i)
+    md.run(n-i+1)
+    return traj
+
 def get_system_properties(system, calc, i, f):
     #Get system potential energy and track time of calculation
     b4          = time.time()
