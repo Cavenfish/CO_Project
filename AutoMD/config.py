@@ -1,13 +1,18 @@
 import sys, time, os
+os.environ["NUMBA_NUM_THREADS"] = '2'
+
+from numba import njit, config
+config.THREADING_LAYER = 'omp'
+
 import numpy as np
 import pandas as pd
-from numba import njit
 import matplotlib.pyplot as plt
 from scipy.constants import c
 from ase.io import read, write
 from ase import units, Atoms
-from ase.optimize import BFGS, FIRE, GPMin, MDMin
-from .MvH_CO_JM8_BCF import MvH_CO
+from ase.optimize import BFGS, LBFGS, FIRE, GPMin, MDMin
+from .pFF import MvH_CO
+#from .MvH_CO_JM8_BCF import MvH_CO
 #from .H2O_CO_BCF import H2O_CO
 from ase.visualize import view
 from ase.vibrations import Vibrations
@@ -255,6 +260,7 @@ def geo_opt(xyz, fmax=0.0001, method='BFGS'):
 
     #Methods dictionary
     meth  = {'BFGS' :  BFGS(system, trajectory=traj),
+             'LBFGS': LBFGS(system, trajectory=traj),
              'FIRE' :  FIRE(system, trajectory=traj),
              'GPMin': GPMin(system, trajectory=traj),
              'MDMin': MDMin(system, trajectory=traj)}

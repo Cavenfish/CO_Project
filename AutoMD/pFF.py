@@ -1,11 +1,6 @@
-import os
-os.environ["NUMBA_NUM_THREADS"] = '4'
-
 from itertools import combinations
 from numpy     import exp, sqrt, dot, zeros_like, array
-from numba     import njit, config, prange
-
-config.THREADING_LAYER = 'omp'
+from numba     import njit, prange
 
 #Morse only calculation (single molecule)
 @njit(parallel=True, cache=True)
