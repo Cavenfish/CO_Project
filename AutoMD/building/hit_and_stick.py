@@ -53,9 +53,9 @@ def hit_and_stick(inp):
     else:
         sys.exit('Input not accepted')
 
-    #Initialize system 
-    n         = p['size'] - 1
+    #Initialize system
     system    = read(p['xyz'])
+    n         = p['size'] - len(system.positions)
     molec     = read(p['mol'])
     blank_pos = molec.get_positions()
     coMass    = molec.get_masses()
