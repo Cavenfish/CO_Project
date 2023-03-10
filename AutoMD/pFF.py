@@ -276,6 +276,9 @@ def executeCalculations(positions, comb):
         rj1i1 = dotSqrt(posj1 - posi1)
         rj0i1 = dotSqrt(posj0 - posi1)
         rj1i0 = dotSqrt(posj1 - posi0)
+        
+        #if (rj0i0[0] > 20) and (rj0i1[0] > 20):
+        #    continue
 
         #Calculate Dispersion
         Ecc, Fcc = V_disp(rj0i0, Ccc)

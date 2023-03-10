@@ -4,11 +4,11 @@ from alphashape import alphashape
 from shapely.geometry import MultiPoint
 
 class Structure:
-    def __init__(self, inp):
-        with open(inp, 'r') as f:
-            self.p = safe_load(f)
+    def __init__(self, xyz):
+        #with open(inp, 'r') as f:
+        #    self.p = safe_load(f)
 
-        self.system = read(self.p['xyz'])
+        self.system = read(xyz)#self.p['xyz'])
         self.aShape = alphashape(self.system.positions)
 
     def getGlobalDensity(self):
@@ -19,3 +19,15 @@ class Structure:
 
         units = 'g/cm3'
         print(f'Density: {d} {units}')
+        return
+
+    def getLocalDensity(self, r):
+        v = 4/3 * np.pi * r**3 * 1e-24
+        return 
+
+    def getLowFreqDOS(self):
+        return
+
+    #Add rdf, adf, vacf
+
+

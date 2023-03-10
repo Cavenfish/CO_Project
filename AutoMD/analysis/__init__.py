@@ -10,5 +10,7 @@ from .get_surface       import get_surface
 from .get_num_neighbors import get_num_neighbors
 from .get_density       import get_density
 from .get_radial_energy import get_radial_energy
+from .structure         import Structure
+from .vacf              import vacf, vdos
 
 __functions__ = [half_life, diffusion_length]
