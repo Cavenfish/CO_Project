@@ -1,5 +1,5 @@
 import sys, time, os
-os.environ["NUMBA_NUM_THREADS"] = '2'
+os.environ["NUMBA_NUM_THREADS"] = '1'
 
 from numba import njit, config
 config.THREADING_LAYER = 'omp'
