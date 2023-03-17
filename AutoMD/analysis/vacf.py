@@ -1,6 +1,5 @@
 from ..config import *
-from scipy import fft
-from numpy.fft import fftfreq
+from numpy.fft import fftfreq, fft
 from numba import njit
 
 @njit
@@ -36,15 +35,13 @@ class VACF:
         n = self.c.shape[0]
         w = [W(i,n) for i in range(0,n)]
 
-        self.window = np.reshape(w, (n,1,1))
-        self.c  *= self.window
+        self.window = w
+        self.c     *= self.window
         return
 
     def _padZeros(self, f):
-        i = self.c.shape[0]
-        j = self.c.shape[1]
-        k = self.c.shape[2]
-        z = np.zeros((i*f,j,k))
+        i = len(self.c)
+        z = np.zeros(i*f)
 
         z[:i]       = self.c
         self.c   = z
@@ -62,7 +59,7 @@ class VACF:
         return
 
     def getSpectrum(self, win, pad, mir):
-        self.c = vacf(self.data, self.m)
+        self.c = vacf(self.vel, self.m)
 
         if win:
             self._window(win)
