@@ -1,7 +1,7 @@
 import sys, time, os
-os.environ["NUMBA_NUM_THREADS"] = '1'
+os.environ["NUMBA_NUM_THREADS"] = '2'
 
-from numba import njit, config
+from numba import njit, config, set_num_threads
 config.THREADING_LAYER = 'omp'
 
 import numpy as np
@@ -277,7 +277,10 @@ def geo_opt(xyz, fmax=0.0001, method='BFGS'):
 
     return opt_f
 
-def calc_vibs(xyz):
+def calc_vibs(xyz, **kwargs):
+    #Parallel FF breaks freq claculations (they parallel write json)
+    set_num_threads(1)
+
     #Read in system and set van Hemert calculator
     system, calc = prep_system(xyz)
 
@@ -285,8 +288,7 @@ def calc_vibs(xyz):
     vib = Vibrations(system, delta=0.0001)
     vib.run()
     vib.summary(log=xyz.replace('.xyz', '_vib.out'))
-    vib.write_dos(xyz.replace('.xyz', '_vibDOS.out'))
-    #vib.write_jmol()
+    vib.write_dos(xyz.replace('.xyz', '_vibDOS.out'), **kwargs)
     vib.clean()
     return
 
@@ -370,7 +372,7 @@ def continueNVE(traj, n=750000, i=100, ts=1):
 
     tj = Trajectory(traj, 'a', a)
     md = VelocityVerlet(a, ts * units.fs)
-    
+
     #Traj writer automatically writes step 0
     #so to avoid having two identical steps we
     #first run a single interval then attach the
