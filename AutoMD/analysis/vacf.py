@@ -25,30 +25,29 @@ class VACF:
     Welch      = lambda _,n,N: 1 - ((n-N/2)/(N/2))**2
     HannMirror = lambda _,n,N: np.cos((np.pi*n)/(2*(N-1)))**2
 
-    
+
     def  __init__(self, vel, dt, m):
-        self.data = vel
         self.vel  = vel
         self.dt   = dt
         self.m    = m
         return
 
     def _window(self, W):
-        n = self.vel.shape[0]
+        n = self.c.shape[0]
         w = [W(i,n) for i in range(0,n)]
-        
+
         self.window = np.reshape(w, (n,1,1))
-        self.data  *= self.window
+        self.c  *= self.window
         return
 
     def _padZeros(self, f):
-        i = self.vel.shape[0]
-        j = self.vel.shape[1]
-        k = self.vel.shape[2]
+        i = self.c.shape[0]
+        j = self.c.shape[1]
+        k = self.c.shape[2]
         z = np.zeros((i*f,j,k))
-        
-        z[:i]       = self.data
-        self.data   = z
+
+        z[:i]       = self.c
+        self.c   = z
         return
 
     def _vdos(self):
@@ -63,16 +62,16 @@ class VACF:
         return
 
     def getSpectrum(self, win, pad, mir):
+        self.c = vacf(self.data, self.m)
+
         if win:
             self._window(win)
-        
+
         if pad:
             self._padZeros(pad)
 
         if mir:
-            self.data = np.hstack((np.flipud(self.data), self.data))
+            self.c = np.hstack((np.flipud(self.c), self.c))
 
-        self.c = vacf(self.data, self.m)
-        
         self._vdos()
         return
