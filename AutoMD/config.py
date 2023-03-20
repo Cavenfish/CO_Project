@@ -225,9 +225,6 @@ def Morse_excitation(nu, n):
     #nu -> cm^-1
     # n -> unitless
 
-    #Note: D_e, and beta are values fitted to CO
-    #      if using an isotope, we need new values
-
     #Constants and unite conversions
     D_e   = 11.2301  #eV
     beta  =  2.627   #Angstrom^-1
