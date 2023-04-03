@@ -10,7 +10,7 @@ def vacf(vel, m):
     for t in range(nstep):
         for j in range(nstep-t):
             for i in range(natoms):
-                c[t] += np.dot(vel[j,i], vel[j+t,i]) * m[i]
+                c[t] += np.dot(vel[j,i,:], vel[j+t,i,:]) * m[i]
 
     c /= c[0]
     return c
@@ -68,7 +68,7 @@ class VACF:
             self._padZeros(pad)
 
         if mir:
-            self.c = np.hstack((np.flipud(self.c), self.c))
+            self.c = np.hstack((np.flipud(self.c), self.c[1:]))
 
         self._vdos()
         return
