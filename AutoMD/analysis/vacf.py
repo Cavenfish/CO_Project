@@ -1,19 +1,6 @@
 from ..config import *
-from numpy.fft import fftfreq, fft
-from numba import njit
-
-@njit
-def vacf(vel, m):
-    natoms = vel.shape[1]
-    nstep  = vel.shape[0]
-    c      = np.zeros(nstep)
-    for t in range(nstep):
-        for j in range(nstep-t):
-            for i in range(natoms):
-                c[t] += np.dot(vel[j,i,:], vel[j+t,i,:]) * m[i]
-
-    c /= c[0]
-    return c
+from numpy.fft import fftfreq, fft, ifft
+from numba import njit    
 
 class VACF:
     '''
@@ -25,10 +12,9 @@ class VACF:
     HannMirror = lambda _,n,N: np.cos((np.pi*n)/(2*(N-1)))**2
 
 
-    def  __init__(self, vel, dt, m):
+    def  __init__(self, vel, dt):
         self.vel  = vel
         self.dt   = dt
-        self.m    = m
         return
 
     def _window(self, W):
@@ -58,8 +44,26 @@ class VACF:
         self.I = np.abs(I)
         return
 
+    def _vacf(self):
+        T = self.vel.shape[0]
+        N = self.vel.shape[1]
+        D = self.vel.shape[2]
+        c = np.zeros(T-1)
+        
+        for i in range(N):
+            for j in range(D):
+                data = self.vel[:,i,j]
+                forw = fft(data, n=2*T)
+                tmp  = forw * np.conjugate(forw)
+                back = ifft(tmp)[:T] / T
+                c   += np.real(back[:T-1])
+ 
+        c   /= c[0]
+        return c
+
+
     def getSpectrum(self, win, pad, mir):
-        self.c = vacf(self.vel, self.m)
+        self.c = self._vacf()
 
         if win:
             self._window(win)

@@ -61,6 +61,11 @@ def hit_and_stick(inp):
     n       //= ( len(molec.positions) // 2)
     blank_pos = molec.get_positions()
     coMass    = molec.get_masses()
+    
+    #Fixing CoM 
+    pos = system.get_positions()
+    mas = system.get_masses()
+    com = CoM(pos, mas)
 
     #Make blank traj file 
     if 'trajName' in p:
@@ -72,7 +77,7 @@ def hit_and_stick(inp):
     for i in range(n):
         pos = system.get_positions()
         mas = system.get_masses()
-        com = CoM(pos, mas)
+        #com = CoM(pos, mas)
 
         #Get random unit vector
         r = randVector()
