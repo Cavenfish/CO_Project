@@ -11,8 +11,8 @@ class VACF:
     Welch      = lambda _,n,N: 1 - ((n-N/2)/(N/2))**2
     HannMirror = lambda _,n,N: np.cos((np.pi*n)/(2*(N-1)))**2
 
-
     def  __init__(self, vel, dt):
+        self.atms = False
         self.vel  = vel
         self.dt   = dt
         return
@@ -49,8 +49,13 @@ class VACF:
         N = self.vel.shape[1]
         D = self.vel.shape[2]
         c = np.zeros(T-1)
+
+        if self.atms:
+            atoms = self.atms
+        else:
+            atoms = range(N)
         
-        for i in range(N):
+        for i in atoms:
             for j in range(D):
                 data = self.vel[:,i,j]
                 forw = fft(data, n=2*T)
@@ -60,7 +65,6 @@ class VACF:
  
         c   /= c[0]
         return c
-
 
     def getSpectrum(self, win, pad, mir):
         self.c = self._vacf()
