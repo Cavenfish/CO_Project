@@ -1,6 +1,6 @@
+import copy
 from ..config import *
 from numpy.fft import fftfreq, fft, ifft
-from numba import njit    
 
 class VACF:
     '''
@@ -68,6 +68,7 @@ class VACF:
 
     def getSpectrum(self, win, pad, mir):
         self.c = self._vacf()
+        self.C = copy.deepcopy(self.c) 
 
         if win:
             self._window(win)
