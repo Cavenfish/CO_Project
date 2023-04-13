@@ -7,7 +7,10 @@ def all_isotopes_dissipation(isoDict, err=False, noBkg=False):
         N   = len(csvNames)
 
         for fname in csvNames:
-            df   = pd.read_csv(fname)
+            if 'csv' in fname:
+                df   = pd.read_csv(fname)
+            elif 'parquet' in fname:
+                df   = pd.read_parquet(fname, columns=['Time', key])
             
             try:
                 avg += df[key].values
@@ -26,7 +29,10 @@ def all_isotopes_dissipation(isoDict, err=False, noBkg=False):
         N    = len(csvNames)
 
         for fname in csvNames:
-            df = pd.read_csv(fname)
+            if 'csv' in fname:
+                df   = pd.read_csv(fname)
+            elif 'parquet' in fname:
+                df   = pd.read_parquet(fname, columns=[key])
 
             try:
                 std += (df[key] - avg)**2

@@ -1,8 +1,7 @@
 from ..config   import *
 from ..analysis import VACF
-from multiprocessing import Pool
 
-def slices_of_vacf(traj, frames):
+def slices_of_vacf(traj, frames, n):
     tj = Trajectory(traj)
     df = {}
 
@@ -16,7 +15,7 @@ def slices_of_vacf(traj, frames):
         dyn.attach(tmp.write, interval=3)
 
         #Run NVE
-        dyn.run(1500)
+        dyn.run(n)
 
         #Compute VACF
         tmp = Trajectory('temp.traj')
@@ -28,7 +27,8 @@ def slices_of_vacf(traj, frames):
         acf.getSpectrum(win,pad,mir)
 
         #save VACF
-        df[i] = acf.I
+        key     = f'{i/10} ps'
+        df[key] = acf.I
 
     #Make DataFrame
     df = pd.DataFrame(df, index=acf.v)
