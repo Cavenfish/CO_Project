@@ -12,5 +12,6 @@ from .get_density       import get_density
 from .get_radial_energy import get_radial_energy
 from .structure         import Structure
 from .vacf              import VACF
+from .group_average     import group_average
 
 __functions__ = [half_life, diffusion_length]
