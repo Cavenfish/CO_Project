@@ -24,7 +24,11 @@ class QuickPlot:
 
     def _prep(self, df, col, n):
         x = df['Time']
-        y = savgol_filter(df[col], n, 2)
+
+        if n == 0:
+            y = df[col]
+        else:
+            y = savgol_filter(df[col], n, 2)
         return x,y
 
     def spaget(self, dName, col='Sliced Energy', n=51):
@@ -42,7 +46,7 @@ class QuickPlot:
 
         return plt.gca()
 
-    def isotopes(self, dName, cluster, col='Sliced Energy', n=51):
+    def isotopes(self, dName, cluster, col='Sliced Energy', n=0):
         isos = ['co', '13co', 'c18o', '13c18o']
         for iso in isos:
             df  = self.hdf.get(dName + f'{iso}/{cluster}Avg')

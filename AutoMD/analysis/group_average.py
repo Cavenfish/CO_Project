@@ -3,7 +3,7 @@ from ..config import *
 def leaves(hdf, s):
     for i in range(2):
         node = hdf.get_node(s + f'{i}')
-        
+
         try:
             members = node.__members__
         except:
@@ -16,7 +16,6 @@ def leaves(hdf, s):
 
 def group_average(h5):
     hdf = pd.HDFStore(h5)
-    tmp = {}
 
     # i is [groupName, groupsInGroup, membersInGroup]
     for i in hdf.walk():
@@ -37,7 +36,7 @@ def group_average(h5):
                 n   += 1
 
             avg /= n
-            hdf.put(key, df)
+            hdf.put(key+'Avg', avg)
 
     hdf.close()
     return
