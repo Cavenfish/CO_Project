@@ -1,36 +1,43 @@
 from ..config import *
 
+def leaves(hdf, s):
+    for i in range(2):
+        node = hdf.get_node(s + f'{i}')
+        
+        try:
+            members = node.__members__
+        except:
+            continue
+
+        for j in members:
+            if 'tau' in j:
+                continue
+            yield f'{s}{i}/{j}'
+
 def group_average(h5):
     hdf = pd.HDFStore(h5)
     tmp = {}
 
     # i is [groupName, groupsInGroup, membersInGroup]
     for i in hdf.walk():
-        for j in i[-1]:
+        if ('co0' not in i[1]) and ('13c18o0' not in i[1]):
+            continue
 
-            # key becomes: groupName - last char + 'Avg'
-            key = f'{i[0][:-1]}Avg'
+        for clu in ['co', '13c18o']:
+            n   = 0
+            key = f'{i[0]}/{clu}'
+            print(key)
+            for leaf in leaves(hdf, key):
+                df = hdf.get(leaf)
 
-            # Here we just fill dictionary with
-            # strings for getting memebers
-            try:
-                tmp[key].append(f'{i[0]}/{j}') # ie. groupName/member
-            except:
-                tmp[key] = [f'{i[0]}/{j}']
+                if n == 0:
+                    avg = df * 0
 
-    # Now we run through the dictionary
-    # to get members and average the
-    # DataFrame into a zero-ed out one
-    for key in tmp.keys():
-        avg = hdf.get(tmp[key][0]) * 0
+                avg += df
+                n   += 1
 
-        for i in tmp[key]:
-            df   = hdf.get(i)
-            avg += df
-
-        avg /= len(tmp[key])
-
-        hdf.put(key, df)
+            avg /= n
+            hdf.put(key, df)
 
     hdf.close()
     return
