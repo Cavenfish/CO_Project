@@ -18,6 +18,8 @@ class QuickPlot:
         for i in range(2):
             node = self.hdf.get_node(s + f'{i}')
             for j in node.__members__:
+                if 'tau' in j:
+                    continue
                 yield f'{s}{i}/{j}'
 
     def _prep(self, df, col, n):
@@ -40,11 +42,19 @@ class QuickPlot:
 
         return plt.gca()
 
-    def plotIsotopes(self, dName, cluster, col='Sliced Energy', n=51):
+    def isotopes(self, dName, cluster, col='Sliced Energy', n=51):
         isos = ['co', '13co', 'c18o', '13c18o']
         for iso in isos:
             df  = self.hdf.get(dName + f'{iso}/{cluster}Avg')
             x,y = self._prep(df, col, n)
             plt.plot(x, y, label=self.labels[iso], color=self.colors[iso])
+
+        return plt.gca()
+
+    def compare(self, names, labels, colors, col='Sliced Energy', n=51):
+        for i in range(len(names)):
+            df  = self.hdf.get(names[i])
+            x,y = self._prep(df, col, n)
+            plt.plot(x, y, label=labels[i], colors=colors[i])
 
         return plt.gca()
