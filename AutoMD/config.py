@@ -276,7 +276,7 @@ def geo_opt(xyz, fmax=0.0001, method='BFGS'):
 
 def calc_vibs(xyz, **kwargs):
     #Parallel FF breaks freq claculations (they parallel write json)
-    set_num_threads(1)
+    #set_num_threads(1)
 
     #Read in system and set van Hemert calculator
     system, calc = prep_system(xyz)
