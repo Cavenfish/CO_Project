@@ -13,6 +13,7 @@ class VACF:
 
     def  __init__(self, vel, dt):
         self.atms = False
+        self.norm = False
         self.vel  = vel
         self.dt   = dt
         return
@@ -62,8 +63,13 @@ class VACF:
                 tmp  = forw * np.conjugate(forw)
                 back = ifft(tmp)[:T] / T
                 c   += np.real(back[:T-1])
- 
-        c   /= c[0]
+        
+        #Diffusion Coefficient
+        self.D  = np.sum(c) / (D*len(atoms))
+        self.D *= units.fs**2 * ( (T-1) * self.dt)
+
+        if self.norm:
+            c   /= c[0]
         return c
 
     def getSpectrum(self, win, pad, mir):

@@ -98,7 +98,7 @@ def binding_energy(clusters, molecule, n, fmax, saveName, alpha=None):
                 ful_cont  = np.array(calc.get_energy_contributions()[2:])
                 BE        = ful_E - clu_E - mol_E
                 cont      = ful_cont - clu_cont - mol_cont
-                cont      = np.abs(cont) / sum(np.abs(cont)) * 100
+                #cont      = np.abs(cont) / sum(np.abs(cont)) * 100
                 BE_dict[cluKey].append(BE)
                 contri['Exchange'].append(cont[0])
                 contri['Dispersion'].append(cont[1])
@@ -160,7 +160,7 @@ def binding_energy(clusters, molecule, n, fmax, saveName, alpha=None):
             #Get energy contributions
             ful_cont  = np.array(calc.get_energy_contributions()[2:])
             cont      = ful_cont - clu_cont - mol_cont
-            cont      = np.abs(cont) / sum(np.abs(cont)) * 100
+            #cont      = np.abs(cont) / sum(np.abs(cont)) * 100
 
             #Add energy contributions to dicts
             contri['Exchange'].append(cont[0])
@@ -175,6 +175,6 @@ def binding_energy(clusters, molecule, n, fmax, saveName, alpha=None):
     df = pd.DataFrame(BE_dict)
     df.to_csv(saveName)
     df = pd.DataFrame(contri)
-    df.to_csv(saveName.replace('.csv', '_contri.csv'))
+    df.to_csv(saveName.replace('.csv', '_contri2.csv'))
 
     return

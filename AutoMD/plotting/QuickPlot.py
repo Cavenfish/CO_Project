@@ -75,3 +75,24 @@ class QuickPlot:
 
         self._labelPlot()
         return plt.gca()
+
+    def vacfOneTime(self, dName, time):
+        c = {'eI': '#8EE3EF', 'r1': '#9055A2', 'r2': '#D499B9', 'r3': '#EACBD2'}
+
+        df = self.hdf.get(dName)
+        v  = df.index.values
+        fI = df[f'{time} Full'    ].values
+        eI = df[f'{time} (0, 1)'  ].values
+        r1 = df[f'{time} (1, 10)' ].values
+        r2 = df[f'{time} (10, 20)'].values
+        r3 = df[f'{time} (20, 30)'].values
+
+        plt.plot(v, fI,       label='Full',    color='black')
+        plt.plot(v, eI, '--', label='Excited', color=c['eI'])
+        plt.plot(v, r1, '--', label='r1',      color=c['r1'])
+        plt.plot(v, r2, '--', label='r2',      color=c['r2'])
+
+        if not np.array_equal(fI, r3):
+            plt.plot(v, r3, '--', label='r3', color=c['r3'])
+
+        return plt.gca()

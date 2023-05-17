@@ -11,9 +11,8 @@ from scipy.constants import c
 from ase.io import read, write
 from ase import units, Atoms
 from ase.optimize import BFGS, LBFGS, FIRE, GPMin, MDMin
-#from .pFF import MvH_CO
-from .MvH_CO_JM8_BCF import MvH_CO
-#from .H2O_CO_BCF import H2O_CO
+from .pFF import MvH_CO
+# from .MvH_CO_JM8_BCF import MvH_CO
 from ase.visualize import view
 from ase.vibrations import Vibrations
 from ase.md.verlet import VelocityVerlet
@@ -28,9 +27,9 @@ def view_xyz(xyz):
     view(system)
     return
 
-def prep_system(xyz):
+def prep_system(xyz, np=1):
     system = read(xyz)
-    calc   = MvH_CO(atoms=system)
+    calc   = MvH_CO(np, atoms=system)
     system.set_calculator(calc)
     return system, calc
 
@@ -248,9 +247,9 @@ def Morse_excitation(nu, n):
 
     return r_A
 
-def geo_opt(xyz, fmax=0.0001, method='BFGS'):
+def geo_opt(xyz, fmax=0.0001, method='BFGS', np=1):
     #Read in system and set van Hemert calculator
-    system, calc = prep_system(xyz)
+    system, calc = prep_system(xyz, np)
 
     #Make trajectory string
     traj  = xyz.replace('.xyz', '_opt.traj')
