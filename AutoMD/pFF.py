@@ -4,7 +4,7 @@ from numba           import njit
 from multiprocessing import Manager, Process
 
 #Morse only calculation (single molecule)
-@njit
+@njit(cache=True)
 def onlyMorse(positions):
     dotSqrt = lambda diff: (sqrt(dot(diff, diff)), diff)
 
@@ -49,14 +49,14 @@ def onlyMorse(positions):
     Coul  = ( CoulE,  CoulF)
     return Morse, Exch, Disp, Coul
 
-@njit
+@njit(cache=True)
 def V_disp(r, diff, Cij):
     r2 = r*r
     E  = Cij / r2**3
     F  = 6.0 * E * diff / r2
     return E, F
 
-@njit
+@njit(cache=True)
 def calculate_Disp(rj0i0, rj1i1, rj0i1, rj1i0):
     Ccc = -33.44955570065988
     Coo = -10.546349734130885
@@ -82,13 +82,13 @@ def calculate_Disp(rj0i0, rj1i1, rj0i1, rj1i0):
 
     return energy, Fcc, Foo, Fco, Foc
 
-@njit
+@njit(cache=True)
 def V_exch(r, diff, Aij, Bij):
     E = Aij * exp(-Bij * r)
     F = Bij * E * diff / r
     return E, F
 
-@njit
+@njit(cache=True)
 def calculate_Exch(rj0i0, rj1i1, rj0i1, rj1i0):
     Acc = 361.367206403597
     Aoo = 6370.185468304371
@@ -117,13 +117,13 @@ def calculate_Exch(rj0i0, rj1i1, rj0i1, rj1i0):
 
     return energy, Fcc, Foo, Fco, Foc
 
-@njit
+@njit(cache=True)
 def V_coul(r, diff, Qij):
     E = Qij / r
     F = Qij * diff / r**3 	# = Qij / r**2 * diff / r
     return E, F
 
-@njit
+@njit(cache=True)
 def calculate_Coul(rC1, rO1, rC2, rO2, rj0i0, rj1i1, rj0i1, rj1i0, ri1i0):
     r0          =  1.1282058129221093
     Qc          = -1.7835026375774934
@@ -266,7 +266,7 @@ def calculate_Coul(rC1, rO1, rC2, rO2, rj0i0, rj1i1, rj0i1, rj1i0, ri1i0):
 
     return energy, Fi0, Fi1, Fj0, Fj1
 
-@njit
+@njit(cache=True)
 def calculate_Morse(r, diff):
     epsilon = 11.230139012256362
     rho0    = 2.626624 # 2.3281*1.1282
@@ -278,7 +278,7 @@ def calculate_Morse(r, diff):
 
     return energy, F
 
-@njit
+@njit(cache=True)
 def diffDotSqrt(v2, v1):
     diff = v2 - v1
     r    = sqrt(dot(diff, diff))
