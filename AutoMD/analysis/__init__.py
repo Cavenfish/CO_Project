@@ -13,6 +13,6 @@ from .get_radial_energy import get_radial_energy
 from .structure         import Structure
 from .vacf              import VACF
 from .group_average     import group_average
-from .track_stretch     import fit_stretch
+#from .track_stretch     import fit_stretch
 
 __functions__ = [half_life, diffusion_length]
